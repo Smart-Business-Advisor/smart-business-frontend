@@ -115,7 +115,7 @@ export default function Login({ setShowLogin, setShowSignup }) {
             <p className="text-gray-700 text-center text-sm">
               Don't have an account?
               <Link
-               to="/signup"
+               to="/CreateAccountForm"
                 type="button"
                 className="text-blue-600 hover:underline bg-transparent px-2 cursor-pointer"
                 onClick={() => {

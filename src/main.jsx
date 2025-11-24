@@ -5,8 +5,8 @@ import Features from "./pages/Features/Features";
 import IdeaEvaluationForm from "./pages/Features/Feature1/IdeaEvaluationForm";
 import IdeaSuggestionsForm from "./pages/Features/Feature2/IdeaSuggestionsForm";
 import HeroSection from "./pages/Home/Hero-section";
-import Login from "./pages/Login";
- import Signup from "./pages/Signup";
+import LoginForm from "./pages/LoginForm";
+ import CreateAccountForm from "./pages/CreateAccountForm";
 
 
 createRoot(document.getElementById("root")).render(
@@ -17,8 +17,8 @@ createRoot(document.getElementById("root")).render(
       <Route path="/features" element={<Features />} />
       <Route path="/IdeaEvaluationForm" element={<IdeaEvaluationForm />} />
       <Route path="/IdeaSuggestionsForm" element={<IdeaSuggestionsForm />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/signup" element={<Signup />} />
+      <Route path="/LoginForm" element={<LoginForm />} />
+      <Route path="/CreateAccountForm" element={<CreateAccountForm />} />
      
     </Routes>
   </BrowserRouter>
