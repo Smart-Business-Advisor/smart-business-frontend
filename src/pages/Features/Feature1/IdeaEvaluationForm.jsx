@@ -6,38 +6,56 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import toast, { Toaster } from "react-hot-toast";
-import { BarChart3 } from "lucide-react"; // ✅ أيقونة جديدة
 
-// ✅ Zod Schema
+import {
+  BrainCircuit,
+  HeartPulse,
+  ShieldCheck,
+  Banknote,
+  Gamepad2,
+  Network,
+  ShoppingBag,
+  GraduationCap,
+  Globe,
+  BarChart3,
+} from "lucide-react";
+
+// ----------------------
+// ZOD SCHEMA
+// ----------------------
 const formSchema = z.object({
-  industry: z.string().min(2, "Industry is required"),
-  fundingRounds: z.string().min(1, "Funding Rounds are required"),
-  fundingAmount: z
-    .string()
-    .regex(/^[0-9]+$/, "Funding Amount must be a positive number")
-    .min(1, "Funding Amount is required"),
-  valuation: z
-    .string()
-    .regex(/^[0-9]+$/, "Valuation must be a positive number")
-    .min(1, "Valuation is required"),
-  revenue: z
-    .string()
-    .regex(/^[0-9]+$/, "Revenue must be a positive number")
-    .min(1, "Revenue is required"),
-  employees: z
-    .string()
-    .regex(/^[0-9]+$/, "Employees must be a positive number")
-    .min(1, "Employees count is required"),
-  marketShare: z
-    .string()
-    .regex(/^[0-9]+$/, "Market Share must be a percentage number")
-    .min(1, "Market Share is required"),
-  yearFounded: z
-    .string()
-    .regex(/^[0-9]{4}$/, "Enter a valid year")
-    .min(4, "Year Founded is required"),
-  region: z.string().min(2, "Region is required"),
+  industry: z.string().min(1, "Industry is required"),
+  region: z.string().min(1, "Region is required"),
+  fundingRounds: z.string().min(1, "Funding rounds required"),
+  fundingAmount: z.string().regex(/^[0-9]+$/, "Numbers only"),
+  valuation: z.string().regex(/^[0-9]+$/, "Numbers only"),
+  revenue: z.string().regex(/^[0-9]+$/, "Numbers only"),
+  employees: z.string().regex(/^[0-9]+$/, "Numbers only"),
+  marketShare: z.string().regex(/^[0-9]+$/, "Percentage only"),
+  yearFounded: z.string().regex(/^[0-9]{4}$/, "Year must be 4 digits"),
 });
+
+// ----------------------
+// Options with icons
+// ----------------------
+const industryOptions = [
+  { label: "AI", value: "AI", icon: BrainCircuit },
+  { label: "HealthTech", value: "HealthTech", icon: HeartPulse },
+  { label: "Cybersecurity", value: "Cybersecurity", icon: ShieldCheck },
+  { label: "FinTech", value: "FinTech", icon: Banknote },
+  { label: "Gaming", value: "Gaming", icon: Gamepad2 },
+  { label: "IOT", value: "IOT", icon: Network },
+  { label: "E-Commerce", value: "E-Commerce", icon: ShoppingBag },
+  { label: "EdTech", value: "EdTech", icon: GraduationCap },
+];
+
+const regionOptions = [
+  { label: "Europe", value: "Europe" },
+  { label: "North America", value: "North America" },
+  { label: "Asia", value: "Asia" },
+  { label: "Australia", value: "Australia" },
+  { label: "South America", value: "South America" },
+];
 
 export default function IdeaEvaluationForm() {
   const {
@@ -45,24 +63,19 @@ export default function IdeaEvaluationForm() {
     handleSubmit,
     formState: { errors },
     reset,
+     watch,
+    setValue,
   } = useForm({
     resolver: zodResolver(formSchema),
   });
 
   const [loading, setLoading] = useState(false);
 
-  const onSubmit = async (data) => {
+  const onSubmit = async () => {
     setLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    await new Promise((res) => setTimeout(res, 2000));
 
-    toast.success("Idea evaluated successfully!", {
-      duration: 3000,
-      style: {
-        background: "#4CAF50",
-        color: "#fff",
-        fontWeight: "500",
-      },
-    });
+    toast.success("Idea evaluated successfully!");
 
     reset();
     setLoading(false);
@@ -71,103 +84,147 @@ export default function IdeaEvaluationForm() {
   return (
     <>
       <HeroHeader />
-      <section className="bg-zinc-50 py-16 md:py-32 dark:bg-transparent">
-        <div className="@container mx-auto max-w-5xl px-6">
-          <div className="text-center">
-            <motion.h2
-              className="text-balance text-4xl font-semibold lg:text-5xl text-center pt-4"
-              initial={{ opacity: 0, y: 40 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1, ease: "easeOut" }}
-            >
-              Evaluate your{" "}
-              <span className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">
-                Business Idea
-              </span>
-            </motion.h2>
-            <p className="mt-4 text-gray-500">
-              Fill in the details below to analyze your idea
-            </p>
-          </div>
+
+      <section className="bg-zinc-50 py-16 dark:bg-transparent">
+        <div className="mx-auto max-w-5xl px-6 text-center">
+          <motion.h2
+            className="text-4xl lg:text-5xl font-semibold pt-4"
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            Evaluate your{" "}
+            <span className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">
+              Business Idea
+            </span>
+          </motion.h2>
+
+          <p className="mt-4 text-gray-500">
+            Fill the form below to analyze your idea
+          </p>
         </div>
 
-        {/* --- Form Section --- */}
-        <div className="flex items-center justify-center mt-12">
-          <div className="w-[90%] sm:w-[85%] md:w-[70%] lg:w-[60%] xl:max-w-2xl">
-            <Toaster position="top-center" reverseOrder={false} />
+        <div className="flex justify-center mt-12">
+          <div className="w-[90%] sm:w-[80%] md:w-[60%] lg:w-[45%]">
+            <Toaster position="top-center" />
 
-            <form
-              onSubmit={handleSubmit(onSubmit)}
-              className="flex flex-col gap-6"
-            >
-              {[
-                { label: "Industry", name: "industry", type: "text" },
-                { label: "Funding Rounds", name: "fundingRounds", type: "text" },
-                { label: "Funding Amount (M USD)", name: "fundingAmount", type: "number" },
-                { label: "Valuation (M USD)", name: "valuation", type: "number" },
-                { label: "Revenue (M USD)", name: "revenue", type: "number" },
-                { label: "Employees", name: "employees", type: "number" },
-                { label: "Market Share (%)", name: "marketShare", type: "number" },
-                { label: "Year Founded", name: "yearFounded", type: "number" },
-                { label: "Region", name: "region", type: "text" },
-              ].map((input) => (
-                <motion.div
-                  key={input.name}
-                  animate={errors[input.name] ? { x: [-5, 5, -5, 0] } : { x: 0 }}
-                  transition={{ duration: 0.3 }}
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+              {/* -------------- SELECT INDUSTRY -------------- */}
+              <div>
+                <label className="block mb-2 font-medium">Industry</label>
+
+                <select
+                  {...register("industry")}
+                  className={`w-full p-4 rounded-lg shadow-md border ${
+                    errors.industry ? "border-red-500" : "border-gray-300"
+                  }`}
                 >
-                  <label className="block mb-2 font-medium text-gray-700">
+                  <option value="">Select Industry</option>
+                  {industryOptions.map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <option key={item.value} value={item.value}>
+                        {item.label}
+                      </option>
+                    );
+                  })}
+                </select>
+
+                {errors.industry && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.industry.message}
+                  </p>
+                )}
+
+                {/* Fancy preview selected icon */}
+                <div className="mt-3">
+                  {industryOptions.map((opt) => {
+                    const Icon = opt.icon;
+                    return (
+                      <div
+                        key={opt.value}
+                        className={`flex items-center gap-2 transition-all duration-300 ${
+                          watch("industry") === opt.value
+                            ? "opacity-100"
+                            : "opacity-0 h-0 overflow-hidden"
+                        }`}
+                      >
+                        <Icon className="text-indigo-600 w-5 h-5" />
+                        <span className="font-medium">{opt.label}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* -------------- SELECT REGION -------------- */}
+              <div>
+                <label className="block mb-2 font-medium">Region</label>
+
+                <select
+                  {...register("region")}
+                  className={`w-full p-4 rounded-lg shadow-md border ${
+                    errors.region ? "border-red-500" : "border-gray-300"
+                  }`}
+                >
+                  <option value="">Select Region</option>
+                  {regionOptions.map((item) => (
+                    <option key={item.value} value={item.value}>
+                      {item.label}
+                    </option>
+                  ))}
+                </select>
+
+                {errors.region && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.region.message}
+                  </p>
+                )}
+              </div>
+
+              {/* -------------- TEXT INPUTS -------------- */}
+              {[
+                { label: "Funding Rounds", name: "fundingRounds" },
+                { label: "Funding Amount (M USD)", name: "fundingAmount" },
+                { label: "Valuation (M USD)", name: "valuation" },
+                { label: "Revenue (M USD)", name: "revenue" },
+                { label: "Employees", name: "employees" },
+                { label: "Market Share (%)", name: "marketShare" },
+                { label: "Year Founded", name: "yearFounded" },
+              ].map((input) => (
+                <div key={input.name}>
+                  <label className="block mb-2 font-medium">
                     {input.label}
                   </label>
+
                   <input
-                    type={input.type}
-                    placeholder={`Enter ${input.label}`}
                     {...register(input.name)}
-                    className={`w-full p-4 rounded-lg border ${
+                    className={`w-full p-4 rounded-lg shadow-md border ${
                       errors[input.name]
                         ? "border-red-500"
                         : "border-gray-300"
-                    } shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300`}
+                    }`}
+                    placeholder={`Enter ${input.label}`}
                   />
+
                   {errors[input.name] && (
-                    <p className="text-red-500 text-sm mt-1 animate-bounce">
+                    <p className="text-red-500 text-sm mt-1">
                       {errors[input.name].message}
                     </p>
                   )}
-                </motion.div>
+                </div>
               ))}
 
-              {/* --- Submit Button --- */}
-              <motion.button
+              {/* -------------- SUBMIT BUTTON -------------- */}
+              <button
                 type="submit"
                 disabled={loading}
-                whileTap={{ scale: 0.95 }}
-                className={`flex items-center gap-2 justify-center bg-gradient-to-r from-blue-600 to-indigo-500 text-white font-medium px-5 py-3 rounded-xl shadow-md transition-transform duration-200 ${
-                  loading ? "opacity-80 cursor-not-allowed" : "hover:scale-105"
+                className={`w-full flex justify-center items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-500 text-white py-3 rounded-xl shadow-md ${
+                  loading ? "opacity-80" : "hover:scale-[1.02] transition"
                 }`}
               >
                 {loading ? (
                   <>
-                    <svg
-                      className="animate-spin h-5 w-5 text-white"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      ></circle>
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z"
-                      ></path>
-                    </svg>
+                    <div className="h-5 w-5 rounded-full border-2 border-white border-t-transparent animate-spin"></div>
                     Evaluating...
                   </>
                 ) : (
@@ -176,7 +233,7 @@ export default function IdeaEvaluationForm() {
                     Evaluate Idea
                   </>
                 )}
-              </motion.button>
+              </button>
             </form>
           </div>
         </div>

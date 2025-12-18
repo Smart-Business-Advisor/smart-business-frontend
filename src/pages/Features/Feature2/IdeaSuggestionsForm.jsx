@@ -7,6 +7,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import toast, { Toaster } from "react-hot-toast";
 import { Sparkles } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+
 
 // ✅ Zod Schema
 const formSchema = z.object({
@@ -19,6 +21,8 @@ const formSchema = z.object({
 });
 
 export default function IdeaSuggestionsForm() {
+  const navigate = useNavigate();
+
   const {
     register,
     handleSubmit,
@@ -31,21 +35,32 @@ export default function IdeaSuggestionsForm() {
   const [loading, setLoading] = useState(false);
 
   const onSubmit = async (data) => {
-    setLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+  setLoading(true);
 
-    toast.success("Idea submitted successfully!", {
-      duration: 3000,
-      style: {
-        background: "#4CAF50",
-        color: "#fff",
-        fontWeight: "500",
-      },
-    });
+  // ⏳ Loading لمدة 2 ثانية
+  await new Promise((resolve) => setTimeout(resolve, 2000));
 
-    reset();
-    setLoading(false);
-  };
+  // 🟢 Toast Success
+  toast.success("Idea submitted successfully!", {
+    duration: 3000,
+    style: {
+      background: "#4CAF50",
+      color: "#fff",
+      fontWeight: "500",
+    },
+  });
+
+  // 🧼 Reset inputs
+  reset();
+
+  setLoading(false);
+
+  // 🔁 Redirect
+  navigate("/IdeaSelectionPage");
+};
+
+
+    
 
   return (
     <>

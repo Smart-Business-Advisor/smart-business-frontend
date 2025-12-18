@@ -1,17 +1,42 @@
 import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { isLoggedIn, logout } from "../utils/auth";
 import { Menu, X } from "lucide-react";
-import { Link } from "react-router-dom";
 import logo from "../assets/logo.svg";
 
 export const HeroHeader = () => {
   const [menuState, setMenuState] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [loggedIn, setLoggedIn] = useState(isLoggedIn());
 
+  const navigate = useNavigate();
+
+  // Handle scroll for header background
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Update login state when storage changes (login/logout)
+  useEffect(() => {
+    const handleStorageChange = () => setLoggedIn(isLoggedIn());
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
+
+  const handleLogout = () => {
+    logout();
+    setLoggedIn(false);
+    navigate("/");
+  };
+
+  const navLinks = [
+    { name: "Home", path: "/" },
+    { name: "Features", path: "/features" },
+    { name: "FAQ", path: "/faq" },
+    { name: "Contact", path: "/contact" },
+  ];
 
   return (
     <header>
@@ -53,30 +78,15 @@ export const HeroHeader = () => {
             {/* Desktop Menu */}
             <div className="absolute inset-0 m-auto hidden size-fit lg:block">
               <ul className="flex gap-8 text-sm">
-                <Link
-                  to="/"
-                  className="text-gray-700 text-[16px] hover:text-blue-400 transition"
-                >
-                  Home
-                </Link>
-                <Link
-                  to="/features"
-                  className="text-gray-700 text-[16px] hover:text-blue-400 transition"
-                >
-                  Features
-                </Link>
-                <Link
-                  to="/faq"
-                  className="text-gray-700 text-[16px] hover:text-blue-400 transition"
-                >
-                  FAQ
-                </Link>
-                <Link
-                  to="/contact"
-                  className="text-gray-700 text-[16px] hover:text-blue-400 transition"
-                >
-                  Contact
-                </Link>
+                {navLinks.map((link) => (
+                  <Link
+                    key={link.name}
+                    to={link.path}
+                    className="text-gray-700 text-[16px] hover:text-blue-400 transition"
+                  >
+                    {link.name}
+                  </Link>
+                ))}
               </ul>
             </div>
 
@@ -88,52 +98,36 @@ export const HeroHeader = () => {
             >
               <div className="lg:hidden">
                 <ul className="space-y-6 text-base">
-                  <li>
-                    <Link
-                      to="/"
-                      className="text-gray-600 hover:text-blue-400 block duration-150"
-                      onClick={() => setMenuState(false)}
-                    >
-                      Home
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      to="/features"
-                      className="text-gray-600 hover:text-blue-400 block duration-150"
-                      onClick={() => setMenuState(false)}
-                    >
-                      Features
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      to="/faq"
-                      className="text-gray-600 hover:text-blue-400 block duration-150"
-                      onClick={() => setMenuState(false)}
-                    >
-                      FAQ
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      to="/contact"
-                      className="text-gray-600 hover:text-blue-400 block duration-150"
-                      onClick={() => setMenuState(false)}
-                    >
-                      Contact
-                    </Link>
-                  </li>
+                  {navLinks.map((link) => (
+                    <li key={link.name}>
+                      <Link
+                        to={link.path}
+                        className="text-gray-600 hover:text-blue-400 block duration-150"
+                        onClick={() => setMenuState(false)}
+                      >
+                        {link.name}
+                      </Link>
+                    </li>
+                  ))}
                 </ul>
               </div>
 
               <div className="flex w-full flex-col sm:flex-row sm:gap-3 sm:space-y-0 md:w-fit">
-                <Link
-                  to="/login"
-                  className="px-6 py-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm transition-all"
-                >
-                  Login
-                </Link>
+                {loggedIn ? (
+                  <button
+                    onClick={handleLogout}
+                    className="px-6 py-3 rounded-lg bg-gray-800 hover:bg-gray-900 text-white font-medium text-sm transition-all"
+                  >
+                    Logout
+                  </button>
+                ) : (
+                  <Link
+                    to="/LoginForm"
+                    className="px-6 py-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm transition-all"
+                  >
+                    Login
+                  </Link>
+                )}
               </div>
             </div>
           </div>

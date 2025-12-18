@@ -6,32 +6,21 @@ import toast, { Toaster } from "react-hot-toast";
 import { motion } from "framer-motion";
 import logo from "../assets/logo.svg";
 import { Eye, EyeOff, Check, X } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+ import { API_URL } from "../config/api";
 
-
-/* ----- Zod validation schema ----- */
+/* ----- Password rules ----- */
 const passwordRequirements = [
-  {
-    key: "minLength",
-    test: (s) => s.length >= 8,
-    msg: "At least 8 characters",
-  },
+  { key: "minLength", test: (s) => s.length >= 8, msg: "At least 8 characters" },
   { key: "number", test: (s) => /\d/.test(s), msg: "At least 1 number" },
-  {
-    key: "lower",
-    test: (s) => /[a-z]/.test(s),
-    msg: "At least 1 lowercase letter",
-  },
-  {
-    key: "upper",
-    test: (s) => /[A-Z]/.test(s),
-    msg: "At least 1 uppercase letter",
-  },
+  { key: "lower", test: (s) => /[a-z]/.test(s), msg: "At least 1 lowercase letter" },
+  { key: "upper", test: (s) => /[A-Z]/.test(s), msg: "At least 1 uppercase letter" },
 ];
 
+/* ----- Zod schema ----- */
 const schema = z.object({
   name: z.string().min(1, "Name is required"),
-  email: z.string().min(1, "Email is required").email("Enter a valid email"),
+  email: z.string().email("Enter a valid email"),
   password: z
     .string()
     .min(8, "Password must be at least 8 characters")
@@ -41,6 +30,9 @@ const schema = z.object({
 });
 
 export default function CreateAccountForm() {
+  const navigate = useNavigate();
+  const [showPw, setShowPw] = useState(false);
+
   const {
     register,
     handleSubmit,
@@ -52,26 +44,37 @@ export default function CreateAccountForm() {
     mode: "onTouched",
   });
 
-  const [showPw, setShowPw] = useState(false);
-
-  // watch password to show requirement checks in real-time
   const pwValue = watch("password", "");
 
-  const onSubmit = async (data) => {
-    // loading handled by isSubmitting from react-hook-form
-    // Simulate API call (replace with real API later)
-    try {
-      await new Promise((res) => setTimeout(res, 1800));
-      toast.success("Account created successfully!", {
-        duration: 3000,
-        style: { background: "#4CAF50", color: "#fff", fontWeight: 500 },
-      });
-      // ready to integrate API: send `data` to your server here
-      reset();
-    } catch (err) {
-      toast.error("Something went wrong. Try again.");
+
+
+const onSubmit = async (data) => {
+  try {
+    const res = await fetch(`${API_URL}/account/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        displayName: data.name,
+        userName: data.email,
+        email: data.email,
+        phoneNumber: "",
+        password: data.password,
+      }),
+    });
+
+    if (!res.ok) {
+      const errData = await res.json();
+      console.log("Register error:", errData);
+      throw new Error(errData?.message || "Registration failed");
     }
-  };
+
+    toast.success("Account created successfully!");
+    navigate("/LoginForm");
+  } catch {
+    toast.error("Account already exists or invalid data");
+  }
+};
+
 
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center px-6 py-12">
@@ -82,17 +85,15 @@ export default function CreateAccountForm() {
         transition={{ duration: 0.45 }}
         className="w-full max-w-md bg-white rounded-xl shadow-xl p-8 md:p-10"
       >
-        {/* --- Logo --- */}
+        {/* Logo */}
         <div className="flex justify-center mb-6">
           <img src={logo} alt="logo" className="w-28 h-28 object-contain" />
         </div>
 
-        {/* --- Heading --- */}
         <h2 className="text-center text-2xl md:text-3xl font-extrabold mb-6">
           Create account
         </h2>
 
-        {/* --- Form --- */}
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {/* Name */}
           <div>
@@ -100,12 +101,11 @@ export default function CreateAccountForm() {
               Name
             </label>
             <input
-              type="text"
-              placeholder="Ahmed"
               {...register("name")}
+              placeholder="Ahmed"
               className={`w-full px-4 py-3 rounded-lg border ${
                 errors.name ? "border-red-500" : "border-gray-200"
-              } shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-300`}
+              } shadow-md focus:ring-2 focus:ring-indigo-300`}
             />
             {errors.name && (
               <p className="text-sm text-red-500 mt-1">{errors.name.message}</p>
@@ -118,136 +118,80 @@ export default function CreateAccountForm() {
               Email
             </label>
             <input
-              type="email"
-              placeholder="helloworld@email.com"
               {...register("email")}
+              placeholder="helloworld@email.com"
               className={`w-full px-4 py-3 rounded-lg border ${
                 errors.email ? "border-red-500" : "border-gray-200"
-              } shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-300`}
+              } shadow-md focus:ring-2 focus:ring-indigo-300`}
             />
             {errors.email && (
-              <p className="text-sm text-red-500 mt-1">
-                {errors.email.message}
-              </p>
+              <p className="text-sm text-red-500 mt-1">{errors.email.message}</p>
             )}
           </div>
 
           {/* Password */}
-
           <div>
             <label className="block text-sm font-medium text-gray-600 mb-2">
               Password
             </label>
-
             <div className="relative">
               <input
                 type={showPw ? "text" : "password"}
-                placeholder="........"
                 {...register("password")}
+                placeholder="........"
                 className={`w-full px-4 py-3 rounded-lg border ${
                   errors.password ? "border-red-500" : "border-gray-200"
-                } shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-300 pr-12`}
+                } shadow-md focus:ring-2 focus:ring-indigo-300 pr-12`}
               />
-
-              {/* eye icon */}
               <button
                 type="button"
                 onClick={() => setShowPw((s) => !s)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                aria-label={showPw ? "Hide password" : "Show password"}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
               >
                 {showPw ? <Eye size={20} /> : <EyeOff size={20} />}
               </button>
             </div>
 
-            {/* password requirements block */}
+            {/* Password requirements */}
             <div className="mt-3 text-sm text-gray-600">
-              <div className="font-medium text-gray-700 mb-1">
-                Weak password. Must contain:
-              </div>
-
+              <div className="font-medium mb-1">Weak password. Must contain:</div>
               <ul className="space-y-1">
                 {passwordRequirements.map((req) => {
                   const passed = req.test(pwValue || "");
                   return (
                     <li key={req.key} className="flex items-center gap-2">
-                      <span
-                        className={`${passed ? "text-green-600" : "text-gray-400"}`}
-                      >
-                        {passed ? (
-                          <Check size={16} className="inline" />
-                        ) : (
-                          <X size={16} className="inline" />
-                        )}
-                      </span>
-
-                      <span
-                        className={`${passed ? "text-gray-700" : "text-gray-400"} text-sm`}
-                      >
+                      {passed ? (
+                        <Check size={16} className="text-green-600" />
+                      ) : (
+                        <X size={16} className="text-gray-400" />
+                      )}
+                      <span className={passed ? "text-gray-700" : "text-gray-400"}>
                         {req.msg}
                       </span>
                     </li>
                   );
                 })}
               </ul>
-
-              {errors.password && (
-                <p className="text-sm text-red-500 mt-2">
-                  {errors.password.message}
-                </p>
-              )}
             </div>
           </div>
 
-          {/* --- Submit Button (with spinner) --- */}
-          <div>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className={`w-full flex items-center justify-center gap-3 py-3 rounded-lg text-white font-semibold transition ${
-                isSubmitting
-                  ? "bg-indigo-600/90 cursor-not-allowed"
-                  : "bg-[#3423FF] hover:bg-[#281bcc]"
-              }`}
-            >
-              {isSubmitting ? (
-                <>
-                  <svg
-                    className="animate-spin h-5 w-5 text-white"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z"
-                    ></path>
-                  </svg>
-                  Signing up...
-                </>
-              ) : (
-                "Sign up"
-              )}
-            </button>
-          </div>
+          {/* Submit */}
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className={`w-full py-3 rounded-lg text-white font-semibold ${
+              isSubmitting
+                ? "bg-indigo-600/90 cursor-not-allowed"
+                : "bg-[#3423FF] hover:bg-[#281bcc]"
+            }`}
+          >
+            {isSubmitting ? "Signing up..." : "Sign up"}
+          </button>
         </form>
 
-        {/* --- footer --- */}
         <p className="text-center text-sm text-gray-500 mt-6">
           Already have an account?{" "}
-          <Link
-            to="/LoginForm"
-            className="font-medium text-gray-800 hover:underline"
-          >
+          <Link to="/LoginForm" className="font-medium hover:underline">
             Login
           </Link>
         </p>
