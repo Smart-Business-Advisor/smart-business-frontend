@@ -7,25 +7,28 @@ import { motion } from "framer-motion";
 import logo from "../assets/logo.svg";
 import { Eye, EyeOff, Check, X } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
- import { API_URL } from "../config/api";
+import { fetchPublic } from "../utils/api"; // استخدمنا fetchPublic من api.js
+import { friendlyAuthMessage } from "../utils/errorMessages";
 
 /* ----- Password rules ----- */
 const passwordRequirements = [
-  { key: "minLength", test: (s) => s.length >= 8, msg: "At least 8 characters" },
+  { key: "minLength", test: (s) => s.length >= 6, msg: "At least 6 characters" },
   { key: "number", test: (s) => /\d/.test(s), msg: "At least 1 number" },
   { key: "lower", test: (s) => /[a-z]/.test(s), msg: "At least 1 lowercase letter" },
   { key: "upper", test: (s) => /[A-Z]/.test(s), msg: "At least 1 uppercase letter" },
+  { key: "special", test: (s) => /[^A-Za-z0-9]/.test(s), msg: "At least 1 non-alphanumeric character" },
 ];
 
 /* ----- Zod schema ----- */
 const schema = z.object({
   name: z.string().min(1, "Name is required"),
   email: z.string().email("Enter a valid email"),
+  phoneNumber: z.string().min(1, "Phone number is required"),
   password: z
     .string()
-    .min(8, "Password must be at least 8 characters")
-    .refine((pw) => passwordRequirements.every((r) => r.test(pw)), {
-      message: "Password does not meet requirements",
+    .min(6, "Password must be at least 6 characters")
+    .regex(/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{6,}/, {
+      message: "Password must have at least 1 uppercase, 1 lowercase, 1 number and 1 special character",
     }),
 });
 
@@ -39,6 +42,7 @@ export default function CreateAccountForm() {
     formState: { errors, isSubmitting },
     watch,
     reset,
+    setError,
   } = useForm({
     resolver: zodResolver(schema),
     mode: "onTouched",
@@ -46,39 +50,60 @@ export default function CreateAccountForm() {
 
   const pwValue = watch("password", "");
 
-
-
-const onSubmit = async (data) => {
-  try {
-    const res = await fetch(`${API_URL}/account/register`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        displayName: data.name,
+  const onSubmit = async (data) => {
+    try {
+      const payload = {
+        displayName: data.name || data.email,
         userName: data.email,
         email: data.email,
-        phoneNumber: "",
+        phoneNumber: data.phoneNumber,
         password: data.password,
-      }),
-    });
+      };
 
-    if (!res.ok) {
-      const errData = await res.json();
-      console.log("Register error:", errData);
-      throw new Error(errData?.message || "Registration failed");
+      console.log("register payload:", payload);
+
+      await fetchPublic("/account/register", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
+
+      toast.success("Account created successfully!");
+      reset();
+      navigate("/LoginForm");
+    } catch (err) {
+      console.error(err);
+      // If server returned validation errors, map them to form fields
+      if (err?.data?.errors && typeof err.data.errors === "object") {
+        Object.entries(err.data.errors).forEach(([field, msgs]) => {
+          // map server field names to form field names
+          const fieldMap = {
+            Password: "password",
+            PhoneNumber: "phoneNumber",
+            DisplayName: "name",
+            UserName: "email",
+            Email: "email",
+          };
+          const formField = fieldMap[field] || field.charAt(0).toLowerCase() + field.slice(1);
+          const message = Array.isArray(msgs) ? msgs.join(" ") : String(msgs);
+          try {
+            setError(formField, { type: "server", message });
+          } catch (e) {
+            console.warn("Failed to setError for field", formField, e);
+          }
+        });
+        return;
+      }
+
+      const friendly = friendlyAuthMessage(err);
+      // If field errors were handled above via setError, don't show duplicate toast
+      toast.error(friendly);
     }
-
-    toast.success("Account created successfully!");
-    navigate("/LoginForm");
-  } catch {
-    toast.error("Account already exists or invalid data");
-  }
-};
-
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center px-6 py-12">
       <Toaster position="top-center" />
+
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
@@ -126,6 +151,23 @@ const onSubmit = async (data) => {
             />
             {errors.email && (
               <p className="text-sm text-red-500 mt-1">{errors.email.message}</p>
+            )}
+          </div>
+
+          {/* Phone Number */}
+          <div>
+            <label className="block text-sm font-medium text-gray-600 mb-2">
+              Phone Number
+            </label>
+            <input
+              {...register("phoneNumber")}
+              placeholder="010xxxxxxxx"
+              className={`w-full px-4 py-3 rounded-lg border ${
+                errors.phoneNumber ? "border-red-500" : "border-gray-200"
+              } shadow-md focus:ring-2 focus:ring-indigo-300`}
+            />
+            {errors.phoneNumber && (
+              <p className="text-sm text-red-500 mt-1">{errors.phoneNumber.message}</p>
             )}
           </div>
 

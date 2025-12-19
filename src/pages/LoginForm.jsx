@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -7,6 +7,9 @@ import { motion } from "framer-motion";
 import logo from "../assets/logo.svg";
 import { Eye, EyeOff } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
+import { login } from "../utils/auth";
+import { fetchPublic } from "../utils/api"; // استخدمنا دالة fetchPublic من api.js
+import { friendlyAuthMessage } from "../utils/errorMessages";
 
 /* ----- Zod schema ----- */
 const schema = z.object({
@@ -17,6 +20,14 @@ const schema = z.object({
 export default function LoginForm() {
   const navigate = useNavigate();
   const [showPw, setShowPw] = useState(false);
+
+  /* Redirect if already logged in */
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      navigate("/features", { replace: true });
+    }
+  }, [navigate]);
 
   const {
     register,
@@ -30,36 +41,32 @@ export default function LoginForm() {
 
   const onSubmit = async (data) => {
     try {
-      const res = await fetch(`${API_URL}/account/login`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            userName: data.email, 
-            password: data.password,
-          }),
-        }
-      );
+      const dataRes = await fetchPublic("/account/login", {
+        method: "POST",
+        body: JSON.stringify({
+          email: data.email,
+          password: data.password,
+        }),
+      });
 
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        console.log("Login error:", errData);
-        throw new Error(errData?.message || "Invalid email or password");
-      }
+      if (!dataRes?.token) throw new Error(dataRes?.message || "Token not returned from server");
+
+      login(dataRes.token); // حفظ التوكن وإطلاق الحدث
 
       toast.success("Logged in successfully!");
       reset();
-      // Redirect to dashboard or homepage
-      navigate("/dashboard");
+      navigate("/features");
     } catch (err) {
       console.error(err);
-      toast.error(err.message || "Login failed");
+      const friendly = friendlyAuthMessage(err);
+      toast.error(friendly);
     }
   };
 
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center px-6 py-12">
       <Toaster position="top-center" />
+
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}

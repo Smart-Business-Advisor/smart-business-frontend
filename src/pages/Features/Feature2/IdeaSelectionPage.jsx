@@ -58,7 +58,7 @@ export default function IdeaSelectionPage() {
         {ideas.map((idea, index) => (
           <Card
             key={index}
-            className={`p-6 rounded-2xl border-2 min-h-[260px] relative transition-all ${
+            className={`p-6 rounded-2xl border-2 border-gray-400 min-h-[260px] relative transition-all flex flex-col h-full ${
               idea.recommended ? "border-green-500 shadow-2xl" : ""
             }`}
           >
@@ -71,12 +71,12 @@ export default function IdeaSelectionPage() {
             <p className="text-gray-600">Cost: {idea.cost}</p>
             <p className="text-gray-600">Profit: {idea.profit}</p>
             <p className="text-gray-600">Risk: {idea.risk}</p>
-            <p className="mt-3 text-xl text-gray-800 border border-gray-400 rounded-tl-2xl rounded-br-2xl p-2">{idea.description}</p>
-            <Link to="/FeasibilityAnalysisPage" className="block w-full mt-4 mx-auto text-center"> 
-            <Button className="mt-4 w-full bg-green-600 text-white hover:bg-green-500 border border-green-500">
-          Analyze Feasibility   
-</Button>
-</Link>
+            <p className="mt-3 text-xl text-gray-800 border border-gray-400 rounded-tl-2xl rounded-br-2xl p-2 flex-1">{idea.description}</p>
+            <Link to="/FeasibilityAnalysisPage" className="block w-full mt-auto mx-auto text-center"> 
+              <Button className="w-full bg-green-600 text-white hover:bg-green-500 border border-green-500">
+                Analyze Feasibility
+              </Button>
+            </Link>
           </Card>
         ))}
       </div>
