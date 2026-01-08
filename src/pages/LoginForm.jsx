@@ -7,9 +7,8 @@ import { motion } from "framer-motion";
 import logo from "../assets/logo.svg";
 import { Eye, EyeOff } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { login } from "../utils/auth";
-import { fetchPublic } from "../utils/api"; // استخدمنا دالة fetchPublic من api.js
-import { friendlyAuthMessage } from "../utils/errorMessages";
+import { API_URL } from "../config/api";
+import { login, isLoggedIn } from "../utils/auth";
 
 /* ----- Zod schema ----- */
 const schema = z.object({
@@ -23,8 +22,7 @@ export default function LoginForm() {
 
   /* Redirect if already logged in */
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
+    if (isLoggedIn()) {
       navigate("/features", { replace: true });
     }
   }, [navigate]);
@@ -39,27 +37,36 @@ export default function LoginForm() {
     mode: "onTouched",
   });
 
-  const onSubmit = async (data) => {
+  const onSubmit = async (formData) => {
     try {
-      const dataRes = await fetchPublic("/account/login", {
+      const res = await fetch(`${API_URL}/account/login`, {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          email: data.email,
-          password: data.password,
+          email: formData.email,
+          password: formData.password,
         }),
       });
 
-      if (!dataRes?.token) throw new Error(dataRes?.message || "Token not returned from server");
+      const dataRes = await res.json();
 
-      login(dataRes.token); // حفظ التوكن وإطلاق الحدث
+      if (!res.ok) {
+        throw new Error(dataRes?.message || "Invalid email or password");
+      }
+
+      if (!dataRes?.token) {
+        throw new Error("Token not returned from server");
+      }
+
+      // ✅ save token + notify app
+      login(dataRes.token);
 
       toast.success("Logged in successfully!");
       reset();
       navigate("/features");
     } catch (err) {
       console.error(err);
-      const friendly = friendlyAuthMessage(err);
-      toast.error(friendly);
+      toast.error(err.message || "Login failed");
     }
   };
 
@@ -96,7 +103,9 @@ export default function LoginForm() {
               } shadow-md focus:ring-2 focus:ring-indigo-300`}
             />
             {errors.email && (
-              <p className="text-sm text-red-500 mt-1">{errors.email.message}</p>
+              <p className="text-sm text-red-500 mt-1">
+                {errors.email.message}
+              </p>
             )}
           </div>
 
@@ -123,7 +132,9 @@ export default function LoginForm() {
               </button>
             </div>
             {errors.password && (
-              <p className="text-sm text-red-500 mt-1">{errors.password.message}</p>
+              <p className="text-sm text-red-500 mt-1">
+                {errors.password.message}
+              </p>
             )}
           </div>
 

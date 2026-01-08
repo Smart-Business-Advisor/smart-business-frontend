@@ -4,6 +4,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import "./index.css";
 import Features from "./pages/Features/Features";
 import IdeaEvaluationForm from "./pages/Features/Feature1/IdeaEvaluationForm";
+import IdeaEvaluationResult from "./pages/Features/Feature1/IdeaEvaluationResult";
+import IdeaEvaluationFailed from "./pages/Features/Feature1/IdeaEvaluationFailed";
 import IdeaSuggestionsForm from "./pages/Features/Feature2/IdeaSuggestionsForm";
 import IdeaSelectionPage from "./pages/Features/Feature2/IdeaSelectionPage";
 import FeasibilityAnalysisPage from "./pages/Features/Feature2/FeasibilityAnalysisPage";
@@ -26,6 +28,8 @@ createRoot(document.getElementById("root")).render(
       />
 
       <Route path="/IdeaEvaluationForm" element={<IdeaEvaluationForm />} />
+      <Route path="/IdeaEvaluationResult" element={<IdeaEvaluationResult />} />
+      <Route path="/IdeaEvaluationFailed" element={<IdeaEvaluationFailed />} />
       <Route path="/IdeaSuggestionsForm" element={<IdeaSuggestionsForm />} />
       <Route path="/LoginForm" element={<LoginForm />} />
       <Route path="/CreateAccountForm" element={<CreateAccountForm />} />

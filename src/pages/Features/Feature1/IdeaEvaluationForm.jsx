@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import toast, { Toaster } from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 import {
   BrainCircuit,
@@ -16,28 +17,41 @@ import {
   Network,
   ShoppingBag,
   GraduationCap,
-  Globe,
   BarChart3,
 } from "lucide-react";
 
-// ----------------------
-// ZOD SCHEMA
-// ----------------------
+/* ----------------------
+   ZOD SCHEMA
+---------------------- */
 const formSchema = z.object({
   industry: z.string().min(1, "Industry is required"),
   region: z.string().min(1, "Region is required"),
-  fundingRounds: z.string().min(1, "Funding rounds required"),
+  fundingRounds: z.string().min(1, "Required"),
   fundingAmount: z.string().regex(/^[0-9]+$/, "Numbers only"),
   valuation: z.string().regex(/^[0-9]+$/, "Numbers only"),
   revenue: z.string().regex(/^[0-9]+$/, "Numbers only"),
   employees: z.string().regex(/^[0-9]+$/, "Numbers only"),
-  marketShare: z.string().regex(/^[0-9]+$/, "Percentage only"),
-  yearFounded: z.string().regex(/^[0-9]{4}$/, "Year must be 4 digits"),
+ marketShare: z
+  .string()
+  .regex(/^[0-9]+$/, "Numbers only")
+  .refine((val) => Number(val) <= 100, "Must be ≤ 100"),
+
+ yearFounded: z
+  .string()
+  .regex(/^[0-9]{4}$/, "Year must be 4 digits")
+  .refine(
+    (val) => {
+      const year = Number(val);
+      return year >= 1900 && year <= new Date().getFullYear();
+    },
+    "Year must be between 1900 and current year"
+  ),
+
 });
 
-// ----------------------
-// Options with icons
-// ----------------------
+/* ----------------------
+   OPTIONS
+---------------------- */
 const industryOptions = [
   { label: "AI", value: "AI", icon: BrainCircuit },
   { label: "HealthTech", value: "HealthTech", icon: HeartPulse },
@@ -50,40 +64,85 @@ const industryOptions = [
 ];
 
 const regionOptions = [
-  { label: "Europe", value: "Europe" },
-  { label: "North America", value: "North America" },
-  { label: "Asia", value: "Asia" },
-  { label: "Australia", value: "Australia" },
-  { label: "South America", value: "South America" },
+  "Europe",
+  "North America",
+  "Asia",
+  "Australia",
+  "South America",
 ];
 
 export default function IdeaEvaluationForm() {
+  const navigate = useNavigate();
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    watch,
     reset,
-     watch,
-    setValue,
+    formState: { errors },
   } = useForm({
     resolver: zodResolver(formSchema),
   });
 
   const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState(null);
 
-  const onSubmit = async () => {
-    setLoading(true);
-    await new Promise((res) => setTimeout(res, 2000));
+  /* ----------------------
+     SUBMIT HANDLER
+  ---------------------- */
+  const onSubmit = async (data) => {
+    try {
+      setLoading(true);
 
-    toast.success("Idea evaluated successfully!");
+      const payload = {
+        industry: data.industry,
+        region: data.region,
+        fundingRounds: Number(data.fundingRounds),
+        fundingAmount: Number(data.fundingAmount),
+        valuation: Number(data.valuation),
+        revenue: Number(data.revenue),
+        employees: Number(data.employees),
+        marketShare: Number(data.marketShare),
+        yearFounded: Number(data.yearFounded),
+      };
 
-    reset();
-    setLoading(false);
+      const response = await fetch(
+  "https://stratify-backend-production.up.railway.app/api/ideas/evaluate",
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  }
+);
+
+
+
+
+     
+      const apiResult = await response.json();
+      setResult(apiResult);
+
+      toast.success(apiResult.message || "Idea evaluated successfully!");
+      reset();
+      // Navigate to different result pages depending on API outcome
+      if (apiResult.isProfitable === false) {
+        navigate("/IdeaEvaluationFailed", { state: { result: apiResult } });
+      } else {
+        navigate("/IdeaEvaluationResult", { state: { result: apiResult } });
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Something went wrong, please try again");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <>
       <HeroHeader />
+      <Toaster position="top-center" />
 
       <section className="bg-zinc-50 py-16 dark:bg-transparent">
         <div className="mx-auto max-w-5xl px-6 text-center">
@@ -105,13 +164,11 @@ export default function IdeaEvaluationForm() {
 
         <div className="flex justify-center mt-12">
           <div className="w-[90%] sm:w-[80%] md:w-[60%] lg:w-[45%]">
-            <Toaster position="top-center" />
-
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-              {/* -------------- SELECT INDUSTRY -------------- */}
+
+              {/* Industry */}
               <div>
                 <label className="block mb-2 font-medium">Industry</label>
-
                 <select
                   {...register("industry")}
                   className={`w-full p-4 rounded-lg shadow-md border ${
@@ -119,14 +176,11 @@ export default function IdeaEvaluationForm() {
                   }`}
                 >
                   <option value="">Select Industry</option>
-                  {industryOptions.map((item) => {
-                    const Icon = item.icon;
-                    return (
-                      <option key={item.value} value={item.value}>
-                        {item.label}
-                      </option>
-                    );
-                  })}
+                  {industryOptions.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
                 </select>
 
                 {errors.industry && (
@@ -135,31 +189,23 @@ export default function IdeaEvaluationForm() {
                   </p>
                 )}
 
-                {/* Fancy preview selected icon */}
-                <div className="mt-3">
-                  {industryOptions.map((opt) => {
-                    const Icon = opt.icon;
-                    return (
-                      <div
-                        key={opt.value}
-                        className={`flex items-center gap-2 transition-all duration-300 ${
-                          watch("industry") === opt.value
-                            ? "opacity-100"
-                            : "opacity-0 h-0 overflow-hidden"
-                        }`}
-                      >
-                        <Icon className="text-indigo-600 w-5 h-5" />
-                        <span className="font-medium">{opt.label}</span>
+                {/* Selected Industry Preview */}
+                {industryOptions.map((opt) => {
+                  const Icon = opt.icon;
+                  return (
+                    watch("industry") === opt.value && (
+                      <div key={opt.value} className="flex items-center gap-2 mt-2">
+                        <Icon className="w-5 h-5 text-indigo-600" />
+                        <span>{opt.label}</span>
                       </div>
-                    );
-                  })}
-                </div>
+                    )
+                  );
+                })}
               </div>
 
-              {/* -------------- SELECT REGION -------------- */}
+              {/* Region */}
               <div>
                 <label className="block mb-2 font-medium">Region</label>
-
                 <select
                   {...register("region")}
                   className={`w-full p-4 rounded-lg shadow-md border ${
@@ -167,64 +213,50 @@ export default function IdeaEvaluationForm() {
                   }`}
                 >
                   <option value="">Select Region</option>
-                  {regionOptions.map((item) => (
-                    <option key={item.value} value={item.value}>
-                      {item.label}
+                  {regionOptions.map((r) => (
+                    <option key={r} value={r}>
+                      {r}
                     </option>
                   ))}
                 </select>
-
-                {errors.region && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.region.message}
-                  </p>
-                )}
               </div>
 
-              {/* -------------- TEXT INPUTS -------------- */}
+              {/* Inputs */}
               {[
-                { label: "Funding Rounds", name: "fundingRounds" },
-                { label: "Funding Amount (M USD)", name: "fundingAmount" },
-                { label: "Valuation (M USD)", name: "valuation" },
-                { label: "Revenue (M USD)", name: "revenue" },
-                { label: "Employees", name: "employees" },
-                { label: "Market Share (%)", name: "marketShare" },
-                { label: "Year Founded", name: "yearFounded" },
-              ].map((input) => (
-                <div key={input.name}>
-                  <label className="block mb-2 font-medium">
-                    {input.label}
-                  </label>
-
+                ["Funding Rounds", "fundingRounds"],
+                ["Funding Amount (M USD)", "fundingAmount"],
+                ["Valuation (M USD)", "valuation"],
+                ["Revenue (M USD)", "revenue"],
+                ["Employees", "employees"],
+                ["Market Share (%)", "marketShare"],
+                ["Year Founded", "yearFounded"],
+              ].map(([label, name]) => (
+                <div key={name}>
+                  <label className="block mb-2 font-medium">{label}</label>
                   <input
-                    {...register(input.name)}
+                    {...register(name)}
                     className={`w-full p-4 rounded-lg shadow-md border ${
-                      errors[input.name]
-                        ? "border-red-500"
-                        : "border-gray-300"
+                      errors[name] ? "border-red-500" : "border-gray-300"
                     }`}
-                    placeholder={`Enter ${input.label}`}
+                    placeholder={`Enter ${label}`}
                   />
-
-                  {errors[input.name] && (
+                  {errors[name] && (
                     <p className="text-red-500 text-sm mt-1">
-                      {errors[input.name].message}
+                      {errors[name].message}
                     </p>
                   )}
                 </div>
               ))}
 
-              {/* -------------- SUBMIT BUTTON -------------- */}
+              {/* Submit */}
               <button
                 type="submit"
                 disabled={loading}
-                className={`w-full flex justify-center items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-500 text-white py-3 rounded-xl shadow-md ${
-                  loading ? "opacity-80" : "hover:scale-[1.02] transition"
-                }`}
+                className="w-full flex justify-center items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-500 text-white py-3 rounded-xl shadow-md hover:scale-[1.02] transition"
               >
                 {loading ? (
                   <>
-                    <div className="h-5 w-5 rounded-full border-2 border-white border-t-transparent animate-spin"></div>
+                    <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                     Evaluating...
                   </>
                 ) : (
@@ -235,6 +267,23 @@ export default function IdeaEvaluationForm() {
                 )}
               </button>
             </form>
+
+            {/* RESULT PREVIEW (optional) */}
+            {/* {result && (
+              <div className="mt-8 p-6 rounded-xl shadow-md bg-white text-center">
+                <h3 className="text-xl font-semibold mb-2">Result</h3>
+                <p className="text-gray-700">
+                  Prediction: <strong>{result.prediction}</strong>
+                </p>
+                <p
+                  className={`mt-2 font-medium ${
+                    result.isProfitable ? "text-green-600" : "text-red-600"
+                  }`}
+                >
+                  {result.isProfitable ? "Profitable Idea ✅" : "High Risk Idea ❌"}
+                </p>
+              </div>
+            )} */}
           </div>
         </div>
       </section>
@@ -243,3 +292,4 @@ export default function IdeaEvaluationForm() {
     </>
   );
 }
+

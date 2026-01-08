@@ -9,19 +9,19 @@ import toast, { Toaster } from "react-hot-toast";
 import { Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-
-// ✅ Zod Schema
+// ✅ Zod Schema (مطابق للـ Backend)
 const formSchema = z.object({
   budget: z
     .string()
     .min(1, "Budget is required")
     .regex(/^[0-9]+$/, "Budget must be a number"),
-  experience: z.string().min(3, "Please enter at least 3 characters"),
+  field: z.string().min(3, "Please enter at least 3 characters"),
   location: z.string().min(2, "Location is required"),
 });
 
 export default function IdeaSuggestionsForm() {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
   const {
     register,
@@ -32,39 +32,61 @@ export default function IdeaSuggestionsForm() {
     resolver: zodResolver(formSchema),
   });
 
-  const [loading, setLoading] = useState(false);
-
+  // ✅ Submit Handler (مرتبط بالباك)
   const onSubmit = async (data) => {
-  setLoading(true);
+    try {
+      setLoading(true);
 
-  // ⏳ Loading لمدة 2 ثانية
-  await new Promise((resolve) => setTimeout(resolve, 2000));
+      const response = await fetch(
+        "https://stratify-backend-production.up.railway.app/api/ideas/suggest",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            budget: Number(data.budget), // 🔥 لازم Number
+            location: data.location,
+            field: data.field,
+          }),
+        }
+      );
 
-  // 🟢 Toast Success
-  toast.success("Idea submitted successfully!", {
-    duration: 3000,
-    style: {
-      background: "#4CAF50",
-      color: "#fff",
-      fontWeight: "500",
-    },
-  });
+      if (!response.ok) {
+        throw new Error("Failed to generate ideas");
+      }
 
-  // 🧼 Reset inputs
-  reset();
+      const result = await response.json();
 
-  setLoading(false);
+      // 🧠 تخزين النتيجة علشان صفحة العرض
+      localStorage.setItem(
+        "ideasResult",
+        JSON.stringify({
+          input: {
+            budget: data.budget,
+            location: data.location,
+            field: data.field,
+          },
+          ideas: result,
+        })
+      );
 
-  // 🔁 Redirect
-  navigate("/IdeaSelectionPage");
-};
+      toast.success("Ideas generated successfully 🚀");
 
-
-    
+      reset();
+      navigate("/IdeaSelectionPage");
+    } catch (error) {
+      console.error(error);
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <>
       <HeroHeader />
+
       <section className="bg-zinc-50 py-16 md:py-32 dark:bg-transparent">
         <div className="@container mx-auto max-w-5xl px-6">
           <div className="text-center">
@@ -92,7 +114,7 @@ export default function IdeaSuggestionsForm() {
               onSubmit={handleSubmit(onSubmit)}
               className="flex flex-col gap-6"
             >
-              {/* --- Available Budget --- */}
+              {/* --- Budget --- */}
               <motion.div
                 animate={errors.budget ? { x: [-5, 5, -5, 0] } : { x: 0 }}
                 transition={{ duration: 0.3 }}
@@ -106,18 +128,18 @@ export default function IdeaSuggestionsForm() {
                   {...register("budget")}
                   className={`w-full p-4 rounded-lg border ${
                     errors.budget ? "border-red-500" : "border-gray-300"
-                  } shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300`}
+                  } shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500`}
                 />
                 {errors.budget && (
-                  <p className="text-red-500 text-sm mt-1 animate-bounce">
+                  <p className="text-red-500 text-sm mt-1">
                     {errors.budget.message}
                   </p>
                 )}
               </motion.div>
 
-              {/* --- Experience / Field --- */}
+              {/* --- Field --- */}
               <motion.div
-                animate={errors.experience ? { x: [-5, 5, -5, 0] } : { x: 0 }}
+                animate={errors.field ? { x: [-5, 5, -5, 0] } : { x: 0 }}
                 transition={{ duration: 0.3 }}
               >
                 <label className="block mb-2 font-medium text-gray-700">
@@ -126,14 +148,14 @@ export default function IdeaSuggestionsForm() {
                 <input
                   type="text"
                   placeholder="Enter your experience or field"
-                  {...register("experience")}
+                  {...register("field")}
                   className={`w-full p-4 rounded-lg border ${
-                    errors.experience ? "border-red-500" : "border-gray-300"
-                  } shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300`}
+                    errors.field ? "border-red-500" : "border-gray-300"
+                  } shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500`}
                 />
-                {errors.experience && (
-                  <p className="text-red-500 text-sm mt-1 animate-bounce">
-                    {errors.experience.message}
+                {errors.field && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.field.message}
                   </p>
                 )}
               </motion.div>
@@ -152,21 +174,21 @@ export default function IdeaSuggestionsForm() {
                   {...register("location")}
                   className={`w-full p-4 rounded-lg border ${
                     errors.location ? "border-red-500" : "border-gray-300"
-                  } shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300`}
+                  } shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500`}
                 />
                 {errors.location && (
-                  <p className="text-red-500 text-sm mt-1 animate-bounce">
+                  <p className="text-red-500 text-sm mt-1">
                     {errors.location.message}
                   </p>
                 )}
               </motion.div>
 
-              {/* --- Submit Button with Icon --- */}
+              {/* --- Submit Button --- */}
               <motion.button
                 type="submit"
                 disabled={loading}
                 whileTap={{ scale: 0.95 }}
-                className={`flex items-center gap-2 justify-center bg-gradient-to-r from-blue-600 to-indigo-500 text-white font-medium px-5 py-3 rounded-xl shadow-md transition-transform duration-200 ${
+                className={`flex items-center gap-2 justify-center bg-gradient-to-r from-blue-600 to-indigo-500 text-white font-medium px-5 py-3 rounded-xl shadow-md ${
                   loading ? "opacity-80 cursor-not-allowed" : "hover:scale-105"
                 }`}
               >
@@ -174,8 +196,6 @@ export default function IdeaSuggestionsForm() {
                   <>
                     <svg
                       className="animate-spin h-5 w-5 text-white"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
                       viewBox="0 0 24 24"
                     >
                       <circle
@@ -185,12 +205,12 @@ export default function IdeaSuggestionsForm() {
                         r="10"
                         stroke="currentColor"
                         strokeWidth="4"
-                      ></circle>
+                      />
                       <path
                         className="opacity-75"
                         fill="currentColor"
                         d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z"
-                      ></path>
+                      />
                     </svg>
                     Submitting...
                   </>

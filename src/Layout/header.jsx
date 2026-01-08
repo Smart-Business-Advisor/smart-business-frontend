@@ -18,19 +18,18 @@ export const HeroHeader = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Listen to auth changes (login / logout)
- useEffect(() => {
-  const updateAuth = () => setLoggedIn(isLoggedIn());
+  // Listen to auth changes
+  useEffect(() => {
+    const updateAuth = () => setLoggedIn(isLoggedIn());
 
-  window.addEventListener("auth-change", updateAuth);
-  window.addEventListener("storage", updateAuth);
+    window.addEventListener("auth-change", updateAuth);
+    window.addEventListener("storage", updateAuth);
 
-  return () => {
-    window.removeEventListener("auth-change", updateAuth);
-    window.removeEventListener("storage", updateAuth);
-  };
-}, []);
-
+    return () => {
+      window.removeEventListener("auth-change", updateAuth);
+      window.removeEventListener("storage", updateAuth);
+    };
+  }, []);
 
   const handleLogout = () => {
     logout();
@@ -55,13 +54,13 @@ export const HeroHeader = () => {
               : ""
           }`}
         >
-          <div className="relative flex flex-wrap items-center justify-between gap-6 py-3 lg:gap-0 lg:py-4">
+          <div className="relative flex flex-wrap items-center justify-between py-3 lg:py-4">
             
             {/* Logo */}
-            <div className="flex w-full justify-between lg:w-auto">
+            <div className="flex w-full items-center justify-between lg:w-auto">
               <Link
                 to="/"
-                className="flex items-center space-x-2 text-[#39547d] font-bold text-[24px]"
+                className="flex items-center gap-2 text-[#39547d] font-bold text-2xl"
               >
                 <img src={logo} alt="logo" className="w-12 h-12" />
                 Stratify
@@ -69,20 +68,21 @@ export const HeroHeader = () => {
 
               <button
                 onClick={() => setMenuState(!menuState)}
-                className="lg:hidden text-gray-500"
+                className="lg:hidden text-gray-600"
               >
-                {menuState ? <X size={24} /> : <Menu size={24} />}
+                {menuState ? <X size={26} /> : <Menu size={26} />}
               </button>
             </div>
 
             {/* Desktop Links */}
             <div className="hidden lg:block">
-              <ul className="flex gap-8 text-sm">
+              <ul className="flex gap-10 font-medium">
                 {navLinks.map((link) => (
                   <Link
                     key={link.name}
                     to={link.path}
-                    className="text-gray-700 hover:text-blue-500 transition"
+                    className="text-gray-700 transition hover:text-blue-600
+                               text-base md:text-lg lg:text-xl"
                   >
                     {link.name}
                   </Link>
@@ -91,7 +91,7 @@ export const HeroHeader = () => {
             </div>
 
             {/* Actions */}
-            <div className="flex gap-3">
+            <div className="hidden lg:flex gap-3">
               {loggedIn ? (
                 <button
                   onClick={handleLogout}
@@ -108,6 +108,41 @@ export const HeroHeader = () => {
                 </Link>
               )}
             </div>
+
+            {/* Mobile Menu */}
+            {menuState && (
+              <div className="mt-4 w-full rounded-2xl bg-white shadow-lg lg:hidden">
+                <ul className="flex flex-col items-center gap-6 py-6 font-medium">
+                  {navLinks.map((link) => (
+                    <Link
+                      key={link.name}
+                      to={link.path}
+                      onClick={() => setMenuState(false)}
+                      className="text-gray-700 hover:text-blue-600
+                                 text-lg sm:text-xl"
+                    >
+                      {link.name}
+                    </Link>
+                  ))}
+
+                  {loggedIn ? (
+                    <button
+                      onClick={handleLogout}
+                      className="mt-4 w-3/4 rounded-lg bg-gray-800 py-3 text-white"
+                    >
+                      Logout
+                    </button>
+                  ) : (
+                    <Link
+                      to="/LoginForm"
+                      className="mt-4 w-3/4 rounded-lg bg-blue-600 py-3 text-center text-white"
+                    >
+                      Login
+                    </Link>
+                  )}
+                </ul>
+              </div>
+            )}
           </div>
         </div>
       </nav>
