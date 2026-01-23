@@ -66,7 +66,8 @@ export default function Features() {
             </Link>
 
             {/* --- Feature 3 --- */}
-            <div className="group shadow-zinc-950/5">
+             
+           <Link to="/dashboard" className="group shadow-zinc-950/5">
               <CardHeader className="pb-3">
                 <CardDecorator>
                   <DollarSign className="size-6" aria-hidden />
@@ -82,7 +83,7 @@ export default function Features() {
                   instant AI-driven feasibility report.
                 </p>
               </CardContent>
-            </div>
+            </Link>
           </Card>
         </div>
       </section>

@@ -13,6 +13,11 @@ import HeroSection from "./pages/Home/Hero-section";
 import LoginForm from "./pages/LoginForm";
 import CreateAccountForm from "./pages/CreateAccountForm";
 
+// --- New Financial Dashboard Imports ---
+import DashboardLayout from "./layout/DashboardLayout";
+import DashboardHome from "./pages/Features/Feature3/DashboardHome";
+import FinancialCalculator from "./pages/Features/Feature3/FinancialCalculator";
+
 createRoot(document.getElementById("root")).render(
   <BrowserRouter>
     <Routes>
@@ -38,6 +43,26 @@ createRoot(document.getElementById("root")).render(
         path="/FeasibilityAnalysisPage"
         element={<FeasibilityAnalysisPage />}
       />
+
+
+{/* --- NEW: Financial Analysis Dashboard (Nested Routes) --- */}
+     
+      <Route 
+        path="/dashboard" 
+        element={
+          <ProtectedRoute>
+            <DashboardLayout />
+          </ProtectedRoute>
+        }
+      >
+        {/* 1. Default View: /dashboard (Shows the cards) */}
+        <Route index element={<DashboardHome />} />
+
+        {/* 2. Dynamic Tool View: /dashboard/analysis/break-even (Shows the calculator) */}
+        <Route path="analysis/:toolId" element={<FinancialCalculator />} />
+      </Route>
+
+
     </Routes>
   </BrowserRouter>
 );

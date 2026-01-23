@@ -14,7 +14,7 @@ export default function IdeaEvaluationFailed() {
 
   return (
     <section className="min-h-screen flex items-center justify-center bg-red-50 px-4 mx-auto text-center py-4">
-      <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-4xl mx-auto text-center">
+      <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-4xl  ">
 
         {/* Title */}
         <h2 className="text-2xl font-semibold text-center mb-8 text-red-700">
@@ -64,13 +64,13 @@ export default function IdeaEvaluationFailed() {
                   stroke="#ef4444"
                   strokeWidth="14"
                   fill="none"
-                  strokeDasharray={`${successRate * 4.4} 440`}
+                  strokeDasharray={`${100} 440`}
                 />
               </svg>
 
               <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-                <span className="text-red-600 font-semibold text-lg">Success {successRate}%</span>
-                <span className="text-gray-500 text-sm">Risk {riskRate}%</span>
+                <span className="text-red-600 font-semibold text-lg">Success {29}%</span>
+                <span className="text-gray-500 text-sm">Risk {71}%</span>
               </div>
             </div>
 

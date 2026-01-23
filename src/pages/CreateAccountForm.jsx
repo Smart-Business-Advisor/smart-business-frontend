@@ -62,10 +62,17 @@ export default function CreateAccountForm() {
 
       console.log("register payload:", payload);
 
-      await fetchPublic("/account/register", {
+      const res = await fetch(`/auth/api/Account/register`, {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
+
+      const dataRes = await res.json();
+
+      if (!res.ok) {
+        throw new Error(dataRes?.message || "Registration failed");
+      }
 
       toast.success("Account created successfully!");
       reset();

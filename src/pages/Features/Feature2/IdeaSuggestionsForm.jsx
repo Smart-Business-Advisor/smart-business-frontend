@@ -8,6 +8,7 @@ import { z } from "zod";
 import toast, { Toaster } from "react-hot-toast";
 import { Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { fetchPublic } from "../../../utils/api";
 
 // ✅ Zod Schema (مطابق للـ Backend)
 const formSchema = z.object({
@@ -37,26 +38,21 @@ export default function IdeaSuggestionsForm() {
     try {
       setLoading(true);
 
-      const response = await fetch(
-        "https://stratify-backend-production.up.railway.app/api/ideas/suggest",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            budget: Number(data.budget), // 🔥 لازم Number
-            location: data.location,
-            field: data.field,
-          }),
-        }
-      );
+      const response = await fetchPublic("/ideas/suggest", {
+        method: "POST",
+        body: JSON.stringify({
+          budget: Number(data.budget),
+          location: data.location,
+          field: data.field,
+        }),
+      });
 
-      if (!response.ok) {
-        throw new Error("Failed to generate ideas");
+      // API response structure: { ideas: [...], recommendation: "string" }
+      const { ideas, recommendation } = response;
+
+      if (!ideas || !Array.isArray(ideas)) {
+        throw new Error("Invalid response structure from API");
       }
-
-      const result = await response.json();
 
       // 🧠 تخزين النتيجة علشان صفحة العرض
       localStorage.setItem(
@@ -67,7 +63,8 @@ export default function IdeaSuggestionsForm() {
             location: data.location,
             field: data.field,
           },
-          ideas: result,
+          ideas: ideas,
+          recommendation: recommendation,
         })
       );
 
@@ -76,8 +73,8 @@ export default function IdeaSuggestionsForm() {
       reset();
       navigate("/IdeaSelectionPage");
     } catch (error) {
-      console.error(error);
-      toast.error("Something went wrong. Please try again.");
+      console.error("Error generating ideas:", error);
+      toast.error(error.message || "Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }

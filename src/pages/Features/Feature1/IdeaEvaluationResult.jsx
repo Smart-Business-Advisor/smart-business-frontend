@@ -13,8 +13,8 @@ export default function IdeaEvaluationResult() {
   const riskRate = 100 - successRate;
 
   return (
-    <section className="min-h-screen flex items-center justify-center bg-green-50 px-4 mx-auto py-4">
-      <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-4xl mx-auto">
+    <section className="min-h-screen flex items-center justify-center bg-green-50 px-4  py-4">
+      <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-4xl ">
 
         {/* Title */}
         <h2 className="text-2xl font-semibold text-center mb-8">
@@ -74,16 +74,16 @@ export default function IdeaEvaluationResult() {
                   stroke="#22c55e"
                   strokeWidth="14"
                   fill="none"
-                  strokeDasharray={`${successRate * 4.4} 440`}
+                  strokeDasharray={`${320} 440`}
                 />
               </svg>
 
               <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
                 <span className="text-green-600 font-semibold text-lg">
-                  Success {successRate}%
+                  Success {80}%
                 </span>
                 <span className="text-gray-500 text-sm">
-                  Risk {riskRate}%
+                  Risk {20}%
                 </span>
               </div>
             </div>

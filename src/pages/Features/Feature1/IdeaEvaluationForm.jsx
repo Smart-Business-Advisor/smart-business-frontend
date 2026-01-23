@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import toast, { Toaster } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import { fetchPublic } from "../../../utils/api";
 
 import {
   BrainCircuit,
@@ -105,26 +106,22 @@ export default function IdeaEvaluationForm() {
         yearFounded: Number(data.yearFounded),
       };
 
-      const response = await fetch(
-  "https://stratify-backend-production.up.railway.app/api/ideas/evaluate",
-  {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
-  }
-);
+      const apiResult = await fetchPublic("/ideas/evaluate", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
 
-
-
-
-     
-      const apiResult = await response.json();
       setResult(apiResult);
 
-      toast.success(apiResult.message || "Idea evaluated successfully!");
+      // API response structure: { prediction, isProfitable, message }
+      if (apiResult.message) {
+        toast.success(apiResult.message);
+      } else {
+        toast.success("Idea evaluated successfully!");
+      }
+
       reset();
+
       // Navigate to different result pages depending on API outcome
       if (apiResult.isProfitable === false) {
         navigate("/IdeaEvaluationFailed", { state: { result: apiResult } });
@@ -132,8 +129,8 @@ export default function IdeaEvaluationForm() {
         navigate("/IdeaEvaluationResult", { state: { result: apiResult } });
       }
     } catch (error) {
-      console.error(error);
-      toast.error("Something went wrong, please try again");
+      console.error("Error evaluating idea:", error);
+      toast.error(error.message || "Something went wrong, please try again");
     } finally {
       setLoading(false);
     }

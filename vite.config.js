@@ -6,12 +6,19 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
     proxy: {
-      // Proxy local `/api/*` requests to external API to avoid CORS during development
+      // Proxy local `/api/*` requests to Business API
       "/api": {
+        target: "https://stratifybackend-new.runasp.net",
+        changeOrigin: true,
+        secure: true,
+        rewrite: (path) => path.replace(/^\/api/, ""),
+      },
+      // Proxy local `/auth/*` requests to Identity API
+      "/auth": {
         target: "https://identitytemplateapi.runasp.net",
         changeOrigin: true,
         secure: true,
-        rewrite: (path) => path.replace(/^\/api/, "/api"),
+        rewrite: (path) => path.replace(/^\/auth/, ""),
       },
     },
   },
