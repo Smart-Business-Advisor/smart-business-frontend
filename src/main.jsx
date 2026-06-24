@@ -1,5 +1,5 @@
 import { createRoot } from "react-dom/client";
-import ProtectedRoute from "./components/ProtectedRoute";
+//import ProtectedRoute from "./components/ProtectedRoute";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import "./index.css";
 import Features from "./pages/Features/Features";
@@ -38,9 +38,10 @@ createRoot(document.getElementById("root")).render(
       <Route
         path="/features"
         element={
-          <ProtectedRoute>
-            <Features />
-          </ProtectedRoute>
+          // <ProtectedRoute>
+          //   <Features />
+          // </ProtectedRoute>
+          <Features />
         }
       />
 
