@@ -70,9 +70,9 @@ createRoot(document.getElementById("root")).render(
       <Route
         path="/dashboard"
         element={
-          <ProtectedRoute>
+         // <ProtectedRoute>
             <DashboardLayout />
-          </ProtectedRoute>
+          // </ProtectedRoute>
         }
       >
         {/* 1. Default View: /dashboard (Shows the cards) */}
