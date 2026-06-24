@@ -5,6 +5,7 @@ import { ProgressiveBlur } from "../../components/ui/progressive-blur";
 import bg from "../../assets/bg.png";
 import FooterSection from "../../Layout/FooterSection";
 import { Lightbulb, Wallet, TrendingUp, ShieldAlert, Share2 } from 'lucide-react';
+import { Link } from "react-router-dom";
 
 export default function HeroSection() {
   return (
@@ -27,9 +28,9 @@ export default function HeroSection() {
 
     <div className="mt-12 flex flex-col items-center justify-center gap-2 sm:flex-row lg:justify-start">
       <Button size="lg" className="px-5 text-base">
-        <a href="#link" className="text-nowrap">
+        <Link to="/features" className="text-nowrap">
           Start Now
-        </a>
+        </Link>
       </Button>
     </div>
   </div>
