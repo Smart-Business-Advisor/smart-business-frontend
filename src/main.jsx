@@ -21,7 +21,7 @@ import Contact from "./pages/CONTACT/Contact";
 
 
 // --- New Financial Dashboard Imports ---
-import DashboardLayout from "./layout/DashboardLayout";
+import DashboardLayout from "./Layout/DashboardLayout";
 import DashboardHome from "./pages/Features/Feature3/DashboardHome";
 import FinancialCalculator from "./pages/Features/Feature3/FinancialCalculator";
 
