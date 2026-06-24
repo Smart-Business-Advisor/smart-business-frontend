@@ -12,6 +12,13 @@ import FeasibilityAnalysisPage from "./pages/Features/Feature2/FeasibilityAnalys
 import HeroSection from "./pages/Home/Hero-section";
 import LoginForm from "./pages/LoginForm";
 import CreateAccountForm from "./pages/CreateAccountForm";
+import AnimatedAIChat from "./pages/Features/Feature4/animated-ai-chat";
+import StockPrediction from "./pages/Features/Feature5/StockPrediction";
+import NotFound from "./pages/NotFound";
+
+import Faq from "./pages/FAQ/Faq"; 
+import Contact from "./pages/CONTACT/Contact";
+
 
 // --- New Financial Dashboard Imports ---
 import DashboardLayout from "./layout/DashboardLayout";
@@ -22,6 +29,11 @@ createRoot(document.getElementById("root")).render(
   <BrowserRouter>
     <Routes>
       <Route path="/" element={<HeroSection />} />
+     
+      <Route path="/FAQ/Faq" element={<Faq />} />
+      <Route path="/CONTACT/Contact" element={<Contact />} />
+
+
       {/* <Route path="/features" element={<Features />} /> */}
       <Route
         path="/features"
@@ -43,12 +55,19 @@ createRoot(document.getElementById("root")).render(
         path="/FeasibilityAnalysisPage"
         element={<FeasibilityAnalysisPage />}
       />
+      <Route
+        path="/AnimatedAIChat"
+        element={<AnimatedAIChat />}
+      />
+      <Route
+        path="/StockPrediction"
+        element={<StockPrediction />}
+      />
 
+      {/* --- NEW: Financial Analysis Dashboard (Nested Routes) --- */}
 
-{/* --- NEW: Financial Analysis Dashboard (Nested Routes) --- */}
-     
-      <Route 
-        path="/dashboard" 
+      <Route
+        path="/dashboard"
         element={
           <ProtectedRoute>
             <DashboardLayout />
@@ -62,7 +81,7 @@ createRoot(document.getElementById("root")).render(
         <Route path="analysis/:toolId" element={<FinancialCalculator />} />
       </Route>
 
-
+      <Route path="*" element={<NotFound />} />
     </Routes>
-  </BrowserRouter>
+  </BrowserRouter>,
 );

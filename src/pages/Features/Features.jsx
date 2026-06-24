@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader } from "../../components/ui/card";
-import { Lightbulb, Sparkles, DollarSign } from "lucide-react"; 
+import { Lightbulb, Sparkles, DollarSign, TrendingUp } from "lucide-react"; 
 import { HeroHeader } from "../../Layout/header";
 import FooterSection from "../../Layout/FooterSection";
 import { motion } from "framer-motion";
@@ -84,6 +84,48 @@ export default function Features() {
                 </p>
               </CardContent>
             </Link>
+          </Card>
+
+
+
+          <Card className="@min-4xl:max-w-full @min-4xl:grid-cols-2 @min-4xl:divide-x @min-4xl:divide-y-0 mx-auto mt-8 grid max-w-sm divide-y overflow-hidden shadow-zinc-950/5 *:text-center md:mt-16">
+            {/* --- Feature 4 --- */}
+            <Link to="/AnimatedAIChat" className="group shadow-zinc-950/5">
+              <CardHeader className="pb-3">
+                <CardDecorator>
+                  <Lightbulb className="size-6" aria-hidden />
+                </CardDecorator>
+                <h3 className="mt-6 font-medium">Animated AI Chat</h3>
+              </CardHeader>
+
+              <CardContent>
+                <p className="text-sm text-gray-600 mb-2 pb-2">
+                  Classify and assess potential business ideas based on location
+                  and data trends to predict success rates.
+                </p>
+              </CardContent>
+            </Link>
+
+            {/* --- Feature 5 --- */}
+             
+            <Link to="/StockPrediction" className="group shadow-zinc-950/5">
+              <CardHeader className="pb-3">
+                <CardDecorator>
+                  <TrendingUp className="size-6" aria-hidden />
+                </CardDecorator>
+                <h3 className="mt-6 font-medium">Stock Price Prediction</h3>
+              </CardHeader>
+
+              <CardContent>
+                <p className="text-sm text-gray-600 mb-2 pb-2">
+                  Upload an Excel file with historical stock data and get
+                  AI-powered price predictions with interactive charts.
+                </p>
+              </CardContent>
+            </Link>
+           
+             
+           
           </Card>
         </div>
       </section>

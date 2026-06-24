@@ -40,8 +40,8 @@ export const HeroHeader = () => {
   const navLinks = [
     { name: "Home", path: "/" },
     { name: "Features", path: "/features" },
-    { name: "FAQ", path: "/faq" },
-    { name: "Contact", path: "/contact" },
+    { name: "FAQ", path: "/FAQ/Faq" },
+    { name: "Contact", path: "/CONTACT/Contact" },
   ];
 
   return (

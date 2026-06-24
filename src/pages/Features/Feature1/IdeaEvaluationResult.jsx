@@ -9,8 +9,17 @@ export default function IdeaEvaluationResult() {
 
   if (!result) return null;
 
-  const successRate = Number(result.prediction) || 0;
-  const riskRate = 100 - successRate;
+  const prediction = Number(result.prediction);
+  const hasPrediction = Number.isFinite(prediction);
+  const apiProbability = Number(result.successProbability) || 0;
+  const successRate = hasPrediction
+    ? prediction === 1
+      ? apiProbability
+      : apiProbability
+    : apiProbability;
+  const riskRate = Math.max(0, 100 - successRate);
+  const strokeDasharray = `${Math.max(0, Math.min(440, (successRate / 100) * 440))} 440`;
+  const isSuccessful = hasPrediction ? prediction === 1 : result.isProfitable !== false;
 
   return (
     <section className="min-h-screen flex items-center justify-center bg-green-50 px-4  py-4">
@@ -28,18 +37,18 @@ export default function IdeaEvaluationResult() {
             {/* Status */}
             <div
               className={`flex items-center gap-3 px-6 py-4 rounded-xl w-fit mb-6 mx-auto ${
-                result.isProfitable
+                isSuccessful
                   ? "bg-green-500 text-white"
                   : "bg-red-500 text-white"
               }`}
             >
-              {result.isProfitable ? (
+              {isSuccessful ? (
                 <CheckCircle className="w-6 h-6" />
               ) : (
                 <XCircle className="w-6 h-6" />
               )}
               <span className="text-lg font-medium">
-                {result.isProfitable ? "Profitable" : "High Risk"}
+                {isSuccessful ? "Profitable" : "High Risk"}
               </span>
             </div>
 
@@ -74,24 +83,22 @@ export default function IdeaEvaluationResult() {
                   stroke="#22c55e"
                   strokeWidth="14"
                   fill="none"
-                  strokeDasharray={`${320} 440`}
+                  strokeDasharray={strokeDasharray}
                 />
               </svg>
 
               <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
                 <span className="text-green-600 font-semibold text-lg">
-                  Success {80}%
+                  Success: {successRate.toFixed(2)}%
                 </span>
-                <span className="text-gray-500 text-sm">
-                  Risk {20}%
-                </span>
+                <span className="text-gray-500 text-sm">Risk: {riskRate.toFixed(2)}%</span>
               </div>
             </div>
 
             {/* Description */}
             <p className="text-gray-600 text-sm text-center mt-4 max-w-xs">
-              This business idea shows strong potential for success based on your
-              submitted business data.
+              {result.message ||
+                "This business idea shows strong potential for success based on your submitted business data."}
             </p>
           </div>
         </div>

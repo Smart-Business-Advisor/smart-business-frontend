@@ -14,10 +14,9 @@ const FinancialCalculator = () => {
   const [formValues, setFormValues] = useState({});
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
-  // State to toggle chart types if needed, defaults to 'bar'
+  
   const [chartType, setChartType] = useState('bar'); 
 
-  // Colors for Pie Chart
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
   useEffect(() => {
@@ -99,7 +98,6 @@ const FinancialCalculator = () => {
       <div className="bg-white rounded-xl border shadow-sm overflow-hidden flex flex-col min-h-[500px]">
         <div className="p-6 border-b bg-gray-50/50 flex justify-between items-center">
             <h3 className="text-lg font-semibold text-gray-900">Analysis Dashboard</h3>
-            {/* View Toggles (Optional UI Candy) */}
             {result && (
               <div className="flex bg-gray-100 rounded-lg p-1">
                  <button onClick={() => setChartType('bar')} className={`p-1.5 rounded-md ${chartType === 'bar' ? 'bg-white shadow-sm' : 'text-gray-500'}`} title="Bar Chart">
@@ -140,7 +138,7 @@ const FinancialCalculator = () => {
                    
                    <ResponsiveContainer width="100%" height="100%">
                      {chartType === 'line' ? (
-                       // LINE CHART
+                       
                        <LineChart data={result.chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
                          <XAxis dataKey="name" fontSize={12} tickLine={false} axisLine={false} />
@@ -150,7 +148,7 @@ const FinancialCalculator = () => {
                          <Line type="monotone" dataKey="value" stroke="#2563eb" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 8 }} />
                        </LineChart>
                      ) : chartType === 'pie' && result.pieData ? (
-                       // PIE CHART
+                      
                        <PieChart>
                          <Pie
                            data={result.pieData}
@@ -170,7 +168,7 @@ const FinancialCalculator = () => {
                          <Legend verticalAlign="bottom" height={36}/>
                        </PieChart>
                      ) : (
-                       // BAR CHART (Default)
+                       
                        <BarChart data={result.chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
                          <XAxis dataKey="name" fontSize={12} tickLine={false} axisLine={false} />

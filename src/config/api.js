@@ -1,4 +1,3 @@
-// Use /api for both dev and production.
-// In dev: Vite proxy redirects /api/* to external API.
-// In prod (Vercel): vercel.json rewrites /api/* to external API.
-export const API_URL = "/api";
+// Business Idea API base URL.
+// Matches the Swagger-hosted backend at https://stratify.runasp.net/swagger/index.html.
+export const API_URL = "https://stratify.runasp.net/api";

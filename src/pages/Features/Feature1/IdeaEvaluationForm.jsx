@@ -19,47 +19,63 @@ import {
   ShoppingBag,
   GraduationCap,
   BarChart3,
+  AlertCircle, 
+  Info, 
 } from "lucide-react";
 
 /* ----------------------
    ZOD SCHEMA
 ---------------------- */
+const currentYear = new Date().getFullYear();
+
 const formSchema = z.object({
   industry: z.string().min(1, "Industry is required"),
   region: z.string().min(1, "Region is required"),
-  fundingRounds: z.string().min(1, "Required"),
-  fundingAmount: z.string().regex(/^[0-9]+$/, "Numbers only"),
-  valuation: z.string().regex(/^[0-9]+$/, "Numbers only"),
-  revenue: z.string().regex(/^[0-9]+$/, "Numbers only"),
-  employees: z.string().regex(/^[0-9]+$/, "Numbers only"),
- marketShare: z
-  .string()
-  .regex(/^[0-9]+$/, "Numbers only")
-  .refine((val) => Number(val) <= 100, "Must be ≤ 100"),
+  
+  fundingRounds: z.coerce
+    .number({ invalid_type_error: "Must be a number" })
+    .min(1, "Funding rounds must be at least 1")
+    .max(5, "Funding rounds cannot exceed 5"),
 
- yearFounded: z
-  .string()
-  .regex(/^[0-9]{4}$/, "Year must be 4 digits")
-  .refine(
-    (val) => {
-      const year = Number(val);
-      return year >= 1900 && year <= new Date().getFullYear();
-    },
-    "Year must be between 1900 and current year"
-  ),
+  fundingAmount: z.coerce
+    .number({ invalid_type_error: "Must be a number" })
+    .min(0, "Cannot be negative"),
 
+  valuation: z.coerce
+    .number({ invalid_type_error: "Must be a number" })
+    .min(2.43, "Valuation must be at least 2.43 M")
+    .max(4357.49, "Valuation cannot exceed 4357.49 M"),
+
+  revenue: z.coerce
+    .number({ invalid_type_error: "Must be a number" })
+    .min(0.12, "Revenue must be at least 0.12 M")
+    .max(99.71, "Revenue cannot exceed 99.71 M"),
+
+  employees: z.coerce
+    .number({ invalid_type_error: "Must be a number" })
+    .min(1, "Must have at least 1 employee"),
+
+  marketShare: z.coerce
+    .number({ invalid_type_error: "Must be a number" })
+    .min(0.1, "Market share must be at least 0.1%")
+    .max(10.0, "Market share cannot exceed 10.0%"),
+
+  yearFounded: z.coerce
+    .number({ invalid_type_error: "Must be a valid year" })
+    .min(currentYear, `Launch year must be ${currentYear} or a future year`) // تمنع السنين الماضية
+    .max(2050, "Year is too far in the future"),
 });
 
-/* ----------------------
-   OPTIONS
----------------------- */
+/* 
+   OPTIONS & FIELDS
+ */
 const industryOptions = [
   { label: "AI", value: "AI", icon: BrainCircuit },
   { label: "HealthTech", value: "HealthTech", icon: HeartPulse },
   { label: "Cybersecurity", value: "Cybersecurity", icon: ShieldCheck },
   { label: "FinTech", value: "FinTech", icon: Banknote },
   { label: "Gaming", value: "Gaming", icon: Gamepad2 },
-  { label: "IOT", value: "IOT", icon: Network },
+ 
   { label: "E-Commerce", value: "E-Commerce", icon: ShoppingBag },
   { label: "EdTech", value: "EdTech", icon: GraduationCap },
 ];
@@ -70,6 +86,17 @@ const regionOptions = [
   "Asia",
   "Australia",
   "South America",
+];
+
+
+const inputFields = [
+  { label: "Funding Rounds", name: "fundingRounds", hint: "Expected rounds of funding (Range: 1 to 5)", step: "1" },
+  { label: "Funding Amount (M USD)", name: "fundingAmount", hint: "Total required funding in millions", step: "any" },
+  { label: "Valuation (M USD)", name: "valuation", hint: "Estimated company value (Range: 2.43 - 4357.49 M)", step: "any" },
+  { label: "Revenue (M USD)", name: "revenue", hint: "Expected annual revenue (Range: 0.12 - 99.71 M)", step: "any" },
+  { label: "Employees", name: "employees", hint: "Expected number of employees", step: "1" },
+  { label: "Market Share (%)", name: "marketShare", hint: "Target market share (Range: 0.1% - 10.0%)", step: "any" },
+  { label: "Expected Launch Year", name: "yearFounded", hint: "Must be this year or in the future", step: "1" },
 ];
 
 export default function IdeaEvaluationForm() {
@@ -87,23 +114,22 @@ export default function IdeaEvaluationForm() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
 
-  /* ----------------------
-     SUBMIT HANDLER
-  ---------------------- */
+  /* SUBMIT HANDLER */
   const onSubmit = async (data) => {
     try {
       setLoading(true);
 
+      // Zod coerce has already converted string inputs to Numbers for us
       const payload = {
         industry: data.industry,
         region: data.region,
-        fundingRounds: Number(data.fundingRounds),
-        fundingAmount: Number(data.fundingAmount),
-        valuation: Number(data.valuation),
-        revenue: Number(data.revenue),
-        employees: Number(data.employees),
-        marketShare: Number(data.marketShare),
-        yearFounded: Number(data.yearFounded),
+        fundingRounds: data.fundingRounds,
+        fundingAmount: data.fundingAmount,
+        valuation: data.valuation,
+        revenue: data.revenue,
+        employees: data.employees,
+        marketShare: data.marketShare,
+        yearFounded: data.yearFounded,
       };
 
       const apiResult = await fetchPublic("/ideas/evaluate", {
@@ -113,7 +139,6 @@ export default function IdeaEvaluationForm() {
 
       setResult(apiResult);
 
-      // API response structure: { prediction, isProfitable, message }
       if (apiResult.message) {
         toast.success(apiResult.message);
       } else {
@@ -122,11 +147,15 @@ export default function IdeaEvaluationForm() {
 
       reset();
 
-      // Navigate to different result pages depending on API outcome
-      if (apiResult.isProfitable === false) {
-        navigate("/IdeaEvaluationFailed", { state: { result: apiResult } });
-      } else {
+      const prediction = Number(apiResult.prediction);
+      const isSuccessful = Number.isFinite(prediction)
+        ? prediction === 1
+        : apiResult.isProfitable !== false;
+
+      if (isSuccessful) {
         navigate("/IdeaEvaluationResult", { state: { result: apiResult } });
+      } else {
+        navigate("/IdeaEvaluationFailed", { state: { result: apiResult } });
       }
     } catch (error) {
       console.error("Error evaluating idea:", error);
@@ -155,21 +184,21 @@ export default function IdeaEvaluationForm() {
           </motion.h2>
 
           <p className="mt-4 text-gray-500">
-            Fill the form below to analyze your idea
+            Fill the form below to analyze your idea based on real market constraints
           </p>
         </div>
 
-        <div className="flex justify-center mt-12">
-          <div className="w-[90%] sm:w-[80%] md:w-[60%] lg:w-[45%]">
+        <div className="flex justify-center mt-12 mb-16">
+          <div className="w-[90%] sm:w-[80%] md:w-[60%] lg:w-[45%] bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
 
               {/* Industry */}
               <div>
-                <label className="block mb-2 font-medium">Industry</label>
+                <label className="block mb-1.5 font-medium text-gray-800">Industry</label>
                 <select
                   {...register("industry")}
-                  className={`w-full p-4 rounded-lg shadow-md border ${
-                    errors.industry ? "border-red-500" : "border-gray-300"
+                  className={`w-full p-3.5 rounded-lg border bg-gray-50/50 focus:bg-white transition-all outline-none focus:ring-2 focus:ring-indigo-500/20 ${
+                    errors.industry ? "border-red-400" : "border-gray-300"
                   }`}
                 >
                   <option value="">Select Industry</option>
@@ -181,9 +210,10 @@ export default function IdeaEvaluationForm() {
                 </select>
 
                 {errors.industry && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.industry.message}
-                  </p>
+                  <div className="flex items-center gap-1.5 mt-2 text-red-600 bg-red-50 px-3 py-2 rounded-md text-sm border border-red-100">
+                    <AlertCircle className="w-4 h-4" />
+                    <span>{errors.industry.message}</span>
+                  </div>
                 )}
 
                 {/* Selected Industry Preview */}
@@ -191,9 +221,9 @@ export default function IdeaEvaluationForm() {
                   const Icon = opt.icon;
                   return (
                     watch("industry") === opt.value && (
-                      <div key={opt.value} className="flex items-center gap-2 mt-2">
-                        <Icon className="w-5 h-5 text-indigo-600" />
-                        <span>{opt.label}</span>
+                      <div key={opt.value} className="flex items-center gap-2 mt-2 text-indigo-600 bg-indigo-50 w-fit px-3 py-1 rounded-full text-sm font-medium">
+                        <Icon className="w-4 h-4" />
+                        <span>{opt.label} Selected</span>
                       </div>
                     )
                   );
@@ -202,11 +232,11 @@ export default function IdeaEvaluationForm() {
 
               {/* Region */}
               <div>
-                <label className="block mb-2 font-medium">Region</label>
+                <label className="block mb-1.5 font-medium text-gray-800">Region</label>
                 <select
                   {...register("region")}
-                  className={`w-full p-4 rounded-lg shadow-md border ${
-                    errors.region ? "border-red-500" : "border-gray-300"
+                  className={`w-full p-3.5 rounded-lg border bg-gray-50/50 focus:bg-white transition-all outline-none focus:ring-2 focus:ring-indigo-500/20 ${
+                    errors.region ? "border-red-400" : "border-gray-300"
                   }`}
                 >
                   <option value="">Select Region</option>
@@ -216,45 +246,61 @@ export default function IdeaEvaluationForm() {
                     </option>
                   ))}
                 </select>
+                {errors.region && (
+                  <div className="flex items-center gap-1.5 mt-2 text-red-600 bg-red-50 px-3 py-2 rounded-md text-sm border border-red-100">
+                    <AlertCircle className="w-4 h-4" />
+                    <span>{errors.region.message}</span>
+                  </div>
+                )}
               </div>
 
-              {/* Inputs */}
-              {[
-                ["Funding Rounds", "fundingRounds"],
-                ["Funding Amount (M USD)", "fundingAmount"],
-                ["Valuation (M USD)", "valuation"],
-                ["Revenue (M USD)", "revenue"],
-                ["Employees", "employees"],
-                ["Market Share (%)", "marketShare"],
-                ["Year Founded", "yearFounded"],
-              ].map(([label, name]) => (
-                <div key={name}>
-                  <label className="block mb-2 font-medium">{label}</label>
+              {/* Dynamic Numeric Inputs with Hints & Alerts */}
+              {inputFields.map(({ label, name, hint, step }) => (
+                <div key={name} className="relative">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="font-medium text-gray-800">{label}</label>
+                  </div>
+                  
+                  {/* Hint Text */}
+                  <div className="flex items-center gap-1.5 mb-2 text-gray-500 text-xs">
+                    <Info className="w-3.5 h-3.5" />
+                    <span>{hint}</span>
+                  </div>
+
                   <input
+                    type="number"
+                    step={step}
                     {...register(name)}
-                    className={`w-full p-4 rounded-lg shadow-md border ${
-                      errors[name] ? "border-red-500" : "border-gray-300"
+                    className={`w-full p-3.5 rounded-lg border bg-gray-50/50 focus:bg-white transition-all outline-none focus:ring-2 focus:ring-indigo-500/20 ${
+                      errors[name] ? "border-red-400 focus:ring-red-500/20" : "border-gray-300"
                     }`}
-                    placeholder={`Enter ${label}`}
+                    placeholder={`e.g. for ${label}`}
                   />
+                  
+                  {/* Error Alert Box */}
                   {errors[name] && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {errors[name].message}
-                    </p>
+                    <motion.div 
+                      initial={{ opacity: 0, y: -5 }} 
+                      animate={{ opacity: 1, y: 0 }}
+                      className="flex items-center gap-1.5 mt-2 text-red-600 bg-red-50 px-3 py-2 rounded-md text-sm border border-red-100"
+                    >
+                      <AlertCircle className="w-4 h-4 shrink-0" />
+                      <span>{errors[name].message}</span>
+                    </motion.div>
                   )}
                 </div>
               ))}
 
-              {/* Submit */}
+              {/* Submit Button */}
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full flex justify-center items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-500 text-white py-3 rounded-xl shadow-md hover:scale-[1.02] transition"
+                className="w-full flex justify-center items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-4 rounded-xl shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:-translate-y-0.5 transition-all font-semibold mt-8 disabled:opacity-70 disabled:hover:translate-y-0"
               >
                 {loading ? (
                   <>
-                    <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    Evaluating...
+                    <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Evaluating Market Data...
                   </>
                 ) : (
                   <>
@@ -264,23 +310,6 @@ export default function IdeaEvaluationForm() {
                 )}
               </button>
             </form>
-
-            {/* RESULT PREVIEW (optional) */}
-            {/* {result && (
-              <div className="mt-8 p-6 rounded-xl shadow-md bg-white text-center">
-                <h3 className="text-xl font-semibold mb-2">Result</h3>
-                <p className="text-gray-700">
-                  Prediction: <strong>{result.prediction}</strong>
-                </p>
-                <p
-                  className={`mt-2 font-medium ${
-                    result.isProfitable ? "text-green-600" : "text-red-600"
-                  }`}
-                >
-                  {result.isProfitable ? "Profitable Idea ✅" : "High Risk Idea ❌"}
-                </p>
-              </div>
-            )} */}
           </div>
         </div>
       </section>
@@ -289,4 +318,3 @@ export default function IdeaEvaluationForm() {
     </>
   );
 }
-

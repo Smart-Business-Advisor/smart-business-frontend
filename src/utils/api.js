@@ -1,6 +1,5 @@
 import { API_URL } from "../config/api";
 
-// دالة fetch عامة تدعم Authorization تلقائي
 export const fetchWithAuth = async (endpoint, options = {}) => {
   const token = localStorage.getItem("token");
 
@@ -14,7 +13,7 @@ export const fetchWithAuth = async (endpoint, options = {}) => {
       },
     });
 
-    const data = await res.json().catch(() => null); // لو JSON مش رجع
+    const data = await res.json().catch(() => null); 
     if (!res.ok) {
       const err = new Error(data?.message || `Request failed (${res.status})`);
       err.status = res.status;
@@ -29,7 +28,7 @@ export const fetchWithAuth = async (endpoint, options = {}) => {
   }
 };
 
-// دالة fetch بدون Authorization لو حبيت
+
 export const fetchPublic = async (endpoint, options = {}) => {
   try {
     const res = await fetch(`${API_URL}${endpoint}`, {

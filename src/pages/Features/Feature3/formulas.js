@@ -1,7 +1,7 @@
 // src/data/formulas.js
 
 export const formulas = [
-  // --- 1. Break-Even Point ---
+  //  1. Break-Even Point 
  {
     id: "break-even",
     title: "Break-Even Point",
@@ -84,7 +84,7 @@ export const formulas = [
         { name: "cashFlows", label: "Future Cash Flows (separated by comma)", placeholder: "e.g., 20000, 30000", type: "text" }, 
       ],
       calculate: (values) => {
-        // ... نفس كود الحساب القديم ...
+        
         const initial = parseFloat(values.initialInvestment);
         const rate = parseFloat(values.discountRate) / 100;
         const flows = values.cashFlows.split(',').map(num => parseFloat(num.trim()));

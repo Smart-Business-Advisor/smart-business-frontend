@@ -10,7 +10,7 @@ import { Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { fetchPublic } from "../../../utils/api";
 
-// ✅ Zod Schema (مطابق للـ Backend)
+// Zod Schema 
 const formSchema = z.object({
   budget: z
     .string()
@@ -33,7 +33,7 @@ export default function IdeaSuggestionsForm() {
     resolver: zodResolver(formSchema),
   });
 
-  // ✅ Submit Handler (مرتبط بالباك)
+ 
   const onSubmit = async (data) => {
     try {
       setLoading(true);
@@ -47,14 +47,13 @@ export default function IdeaSuggestionsForm() {
         }),
       });
 
-      // API response structure: { ideas: [...], recommendation: "string" }
       const { ideas, recommendation } = response;
 
       if (!ideas || !Array.isArray(ideas)) {
         throw new Error("Invalid response structure from API");
       }
 
-      // 🧠 تخزين النتيجة علشان صفحة العرض
+     
       localStorage.setItem(
         "ideasResult",
         JSON.stringify({
@@ -68,7 +67,7 @@ export default function IdeaSuggestionsForm() {
         })
       );
 
-      toast.success("Ideas generated successfully 🚀");
+      toast.success("Ideas generated successfully");
 
       reset();
       navigate("/IdeaSelectionPage");

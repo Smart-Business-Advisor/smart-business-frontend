@@ -58,7 +58,7 @@ export default function LoginForm() {
         throw new Error("Token not returned from server");
       }
 
-      // ✅ save token + notify app
+      //  save token 
       login(dataRes.token);
 
       toast.success("Logged in successfully!");

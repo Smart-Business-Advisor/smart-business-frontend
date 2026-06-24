@@ -14,7 +14,7 @@ export default function HeroSection() {
         <section>
           <div className="pb-6 pt-6 md:pb-16 lg:pb-24 lg:pt-24">
             <div className="relative mx-auto flex max-w-6xl flex-col px-6 lg:flex-row lg:items-center lg:justify-between">
-  {/* النص */}
+  
   <div className="mx-auto max-w-lg text-center lg:ml-0 lg:w-1/2 lg:text-left">
     <h1 className="mt-16 max-w-2xl text-balance text-5xl font-medium md:text-5xl lg:mt-16 xl:text-5xl">
       Welcome to Stratify
@@ -34,7 +34,7 @@ export default function HeroSection() {
     </div>
   </div>
 
-  {/* الصورة */}
+
   <img
     className="ml-auto pt-8 mx-auto rounded-2xl my-8 h-auto w-88 object-cover sm:h-80 lg:w-132 lg:h-auto"
     src={bg}
@@ -87,7 +87,7 @@ export default function HeroSection() {
 
                 </InfiniteSlider>
 
-                {/* بقية عناصر التصميم (التدرج والضبابية) */}
+                
                 <div className="bg-linear-to-r from-background absolute inset-y-0 left-0 w-20"></div>
                 <div className="bg-linear-to-l from-background absolute inset-y-0 right-0 w-20"></div>
 

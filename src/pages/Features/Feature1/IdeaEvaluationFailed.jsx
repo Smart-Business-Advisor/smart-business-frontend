@@ -9,8 +9,17 @@ export default function IdeaEvaluationFailed() {
 
   if (!result) return null;
 
-  const successRate = Number(result.prediction) || 0;
-  const riskRate = 100 - successRate;
+  const prediction = Number(result.prediction);
+  const hasPrediction = Number.isFinite(prediction);
+  const apiProbability = Number(result.successProbability) || 0;
+  const failureRate = hasPrediction
+    ? prediction === 1
+      ? Math.max(0, 100 - apiProbability)
+      : apiProbability
+    : apiProbability;
+  const successRate = Math.max(0, 100 - failureRate);
+  const riskRate = failureRate;
+  const strokeDasharray = `${Math.max(0, Math.min(440, (successRate / 100) * 440))} 440`;
 
   return (
     <section className="min-h-screen flex items-center justify-center bg-red-50 px-4 mx-auto text-center py-4">
@@ -64,20 +73,19 @@ export default function IdeaEvaluationFailed() {
                   stroke="#ef4444"
                   strokeWidth="14"
                   fill="none"
-                  strokeDasharray={`${100} 440`}
+                  strokeDasharray={strokeDasharray}
                 />
               </svg>
 
               <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-                <span className="text-red-600 font-semibold text-lg">Success {29}%</span>
-                <span className="text-gray-500 text-sm">Risk {71}%</span>
+                <span className="text-red-600 font-semibold text-lg">Success: {successRate.toFixed(2)}%</span>
+                <span className="text-gray-500 text-sm">Risk: {riskRate.toFixed(2)}%</span>
               </div>
             </div>
 
             <p className="text-gray-600 text-sm text-center mt-4 max-w-xs">
-              According to the submitted data, this idea currently shows low
-              potential. Consider revising the business model or exploring
-              alternatives.
+              {result.message ||
+                "According to the submitted data, this idea currently shows low potential. Consider revising the business model or exploring alternatives."}
             </p>
           </div>
         </div>

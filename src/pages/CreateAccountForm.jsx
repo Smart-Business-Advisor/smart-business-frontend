@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import logo from "../assets/logo.svg";
 import { Eye, EyeOff, Check, X } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { fetchPublic } from "../utils/api"; // استخدمنا fetchPublic من api.js
+import { fetchPublic } from "../utils/api"; 
 import { friendlyAuthMessage } from "../utils/errorMessages";
 
 /* ----- Password rules ----- */
