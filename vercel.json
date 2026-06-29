@@ -1,8 +1,20 @@
 {
   "rewrites": [
     {
-      "source": "/api/:path*",
-      "destination": "https://identitytemplateapi.runasp.net/api/:path*"
+      "source": "/api/Account/:path*",
+      "destination": "https://identitytemplateapi.runasp.net/api/Account/:path*"
+    },
+    {
+      "source": "/api/ideas/:path*",
+      "destination": "https://stratify.runasp.net/api/ideas/:path*"
+    },
+    {
+      "source": "/api/Chat/:path*",
+      "destination": "https://financeaiapi.runasp.net/api/Chat/:path*"
+    },
+    {
+      "source": "/api/Stock/:path*",
+      "destination": "https://financeaiapi.runasp.net/api/Stock/:path*"
     },
     {
       "source": "/(.*)",

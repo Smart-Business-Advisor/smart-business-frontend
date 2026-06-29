@@ -13,6 +13,10 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import * as React from 'react';
 
+const API_URL = "https://financeaiapi.runasp.net/api/Chat/ask";
+
+
+
 //  Textarea Components 
 function useAutoResizeTextarea({ minHeight, maxHeight }) {
   const textareaRef = useRef(null);
@@ -205,7 +209,7 @@ export default function AnimatedAIChat() {
     setIsTyping(true);
 
     try {
-      const response = await fetch('https://financeaiapi.runasp.net/api/Chat/ask', {
+      const response = await fetch(API_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
