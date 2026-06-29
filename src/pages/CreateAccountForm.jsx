@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import logo from "../assets/logo.svg";
 import { Eye, EyeOff, Check, X } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { fetchPublic } from "../utils/api"; 
+import { fetchAuth } from "../utils/api";
 import { friendlyAuthMessage } from "../utils/errorMessages";
 
 /* ----- Password rules ----- */
@@ -60,19 +60,12 @@ export default function CreateAccountForm() {
         password: data.password,
       };
 
-      console.log("register payload:", payload);
+      
 
-      const res = await fetch(`/auth/api/Account/register`, {
+      await fetchAuth("/api/Account/register", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-
-      const dataRes = await res.json();
-
-      if (!res.ok) {
-        throw new Error(dataRes?.message || "Registration failed");
-      }
 
       toast.success("Account created successfully!");
       reset();
@@ -102,7 +95,6 @@ export default function CreateAccountForm() {
       }
 
       const friendly = friendlyAuthMessage(err);
-      // If field errors were handled above via setError, don't show duplicate toast
       toast.error(friendly);
     }
   };

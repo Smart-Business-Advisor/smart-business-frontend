@@ -7,7 +7,7 @@ export default function Contact() {
   const teamMembers = [
     {
       id: 1,
-      name: "Mariem Hamada",
+      name: "Mariam Abdelsalam",
       track: "Machine Learning",
     },
     {
@@ -54,30 +54,7 @@ export default function Contact() {
           {/* Left Side: Project Links & Team */}
           <div className="lg:col-span-2 space-y-8">
             
-            {/* Project Links */}
-            <div className="bg-white dark:bg-white/[0.05] p-8 rounded-2xl shadow-sm border border-gray-200 dark:border-white/10">
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
-                Project Workspace
-              </h3>
-              <div className="space-y-4">
-                <a 
-                  href="https://github.com/Smart-Business-Advisor" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-4 p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 border border-transparent hover:border-gray-200 dark:hover:border-white/10 transition-all group"
-                >
-                  <div className="flex size-10 items-center justify-center rounded-lg bg-gray-100 dark:bg-white/10 text-gray-900 dark:text-white group-hover:scale-110 transition-transform">
-                    <Github className="size-5" />
-                  </div>
-                  <div>
-                    <h4 className="font-medium text-gray-900 dark:text-white">GitHub Organization</h4>
-                    <p className="text-sm text-gray-500 dark:text-white/50">View our source code</p>
-                  </div>
-                </a>
-
-               
-              </div>
-            </div>
+          
 
             {/* Team Members (Grid Layout) */}
             <div className="bg-white dark:bg-white/[0.05] p-8 rounded-2xl shadow-sm border border-gray-200 dark:border-white/10">

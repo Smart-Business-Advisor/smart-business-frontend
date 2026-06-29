@@ -1,4 +1,4 @@
-import { API_URL } from "../config/api";
+import { API_URL, AUTH_API_URL } from "../config/api";
 
 export const fetchWithAuth = async (endpoint, options = {}) => {
   const token = localStorage.getItem("token");
@@ -50,6 +50,32 @@ export const fetchPublic = async (endpoint, options = {}) => {
     return data;
   } catch (err) {
     console.error("Public API Error:", err);
+    throw err;
+  }
+};
+
+// --- Auth API (identity server) ---
+export const fetchAuth = async (endpoint, options = {}) => {
+  try {
+    const res = await fetch(`${AUTH_API_URL}${endpoint}`, {
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...(options.headers || {}),
+      },
+    });
+
+    const data = await res.json().catch(() => null);
+    if (!res.ok) {
+      const err = new Error(data?.message || `Request failed (${res.status})`);
+      err.status = res.status;
+      err.data = data;
+      console.error("Auth API Response Error:", { status: res.status, data });
+      throw err;
+    }
+    return data;
+  } catch (err) {
+    console.error("Auth API Error:", err);
     throw err;
   }
 };

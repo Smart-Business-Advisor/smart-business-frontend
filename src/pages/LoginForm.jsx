@@ -7,8 +7,9 @@ import { motion } from "framer-motion";
 import logo from "../assets/logo.svg";
 import { Eye, EyeOff } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { API_URL } from "../config/api";
+import { fetchAuth } from "../utils/api";
 import { login, isLoggedIn } from "../utils/auth";
+import { friendlyAuthMessage } from "../utils/errorMessages";
 
 /* ----- Zod schema ----- */
 const schema = z.object({
@@ -39,34 +40,31 @@ export default function LoginForm() {
 
   const onSubmit = async (formData) => {
     try {
-      const res = await fetch(`/auth/api/Account/login`, {
+      const dataRes = await fetchAuth("/api/Account/login", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: formData.email,
           password: formData.password,
         }),
       });
 
-      const dataRes = await res.json();
-
-      if (!res.ok) {
-        throw new Error(dataRes?.message || "Invalid email or password");
-      }
-
       if (!dataRes?.token) {
         throw new Error("Token not returned from server");
       }
 
-      //  save token 
-      login(dataRes.token);
+      // Save token + user info
+      login(dataRes.token, {
+        id: dataRes.id,
+        displayName: dataRes.displayName,
+        email: dataRes.email,
+      });
 
       toast.success("Logged in successfully!");
       reset();
       navigate("/features");
     } catch (err) {
       console.error(err);
-      toast.error(err.message || "Login failed");
+      toast.error(friendlyAuthMessage(err));
     }
   };
 
